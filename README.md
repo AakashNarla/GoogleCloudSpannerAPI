@@ -6,7 +6,7 @@
 
 * To Run the application:
 ``` .\gradlew bootRun ```
-* Once application is up, please open [http:localhost:8080] (http://localhost:8080/) on any browser, it will redirect to Swagger UI.
+* Once application is up, please open [http:localhost:8080](http://localhost:8080/) on any browser, it will redirect to Swagger UI.
 Updated API's will be add here for testing.
 
 ### Get Access tokne from Google Cloud Spanner API
