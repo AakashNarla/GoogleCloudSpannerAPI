@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import io.swagger.annotations.*;
-import com.google.spanner.service.SpannerService
+import com.google.spanner.service.InstanceService
 import groovy.util.logging.Slf4j
 import io.swagger.annotations.Api
 
@@ -18,7 +20,7 @@ import io.swagger.annotations.Api
 class InstanceController {
 
 	@Autowired
-	SpannerService spannerService
+	InstanceService spannerService
 
 	@ApiOperation(value = "Return Spanner instance state")
 	@ApiResponses(value = [
@@ -28,8 +30,8 @@ class InstanceController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@GetMapping("{access_token}/{project-id}/{instance-id}/")
-	String getInstanceState(@PathVariable(name = "access_token", required = true)String accessToken, @PathVariable(name = "project-id", required = true)String projectId, @PathVariable(name = "instance-id", required = true)String instanceId){
+	@PostMapping("{project-id}/{instance-id}/")
+	String getInstanceState(@RequestParam(name = "access_token", required = true)String accessToken, @PathVariable(name = "project-id", required = true)String projectId, @PathVariable(name = "instance-id", required = true)String instanceId){
 		String result = spannerService.getInstanceState(accessToken, projectId, instanceId)
 		return result
 	}
