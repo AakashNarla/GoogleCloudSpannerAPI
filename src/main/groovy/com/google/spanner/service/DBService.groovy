@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 
-import com.google.spanner.util.RestTemplateHelper
+import com.google.spanner.util.GoogleAPIConnector
 
 import groovy.json.JsonOutput
 
@@ -12,7 +12,7 @@ import groovy.json.JsonOutput
 class DBService {
 
 	@Autowired
-	RestTemplateHelper restTemplateHelper
+	GoogleAPIConnector googleAPIConnector
 
 	String baseUrl = "https://spanner.googleapis.com/v1/projects/{projectId}/instances/{instanceId}"
 
@@ -22,7 +22,7 @@ class DBService {
 		Map pathVaraible  = createPathVariable(accessToken, projectId, instanceId)
 		String dbUrl =  baseUrl + "/databases"+ accessTokenUrl
 
-		def responseStr = restTemplateHelper.getResponseFromAPIs(dbUrl, pathVaraible)
+		def responseStr = googleAPIConnector.getResponseFromAPIs(dbUrl, pathVaraible)
 
 		if(StringUtils.isEmpty(responseStr)) {
 			responseStr = ""
@@ -36,7 +36,7 @@ class DBService {
 		pathVaraible.put("database", database)
 		String dbUrl =  baseUrl + "/databases/{database}"+ accessTokenUrl
 
-		def responseStr = restTemplateHelper.getResponseFromAPIs(dbUrl, pathVaraible)
+		def responseStr = googleAPIConnector.getResponseFromAPIs(dbUrl, pathVaraible)
 
 		if(StringUtils.isEmpty(responseStr)) {
 			responseStr = ""
@@ -53,7 +53,7 @@ class DBService {
 
 		String jsonBody = JsonOutput.toJson(bodyMap)
 
-		def responseStr = restTemplateHelper.postResponseToAPIs(dbUrl, jsonBody, pathVaraible)
+		def responseStr = googleAPIConnector.postResponseToAPIs(dbUrl, jsonBody, pathVaraible)
 
 		if(StringUtils.isEmpty(responseStr)) {
 			responseStr = ""

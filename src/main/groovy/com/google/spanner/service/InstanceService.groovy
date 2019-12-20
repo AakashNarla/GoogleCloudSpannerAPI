@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 
-import com.google.spanner.util.RestTemplateHelper
+import com.google.spanner.util.GoogleAPIConnector
 
 import groovy.json.JsonOutput
 
@@ -12,7 +12,7 @@ import groovy.json.JsonOutput
 class InstanceService {
 
 	@Autowired
-	RestTemplateHelper restTemplateHelper
+	GoogleAPIConnector googleAPIConnector
 
 	String baseUrl = "https://spanner.googleapis.com/v1/projects/{projectId}/instances/{instanceId}"
 
@@ -22,7 +22,7 @@ class InstanceService {
 		Map pathVaraible  = createPathVariable(accessToken, projectId, instanceId)
 
 		def stateUrl =  baseUrl + accessTokenUrl
-		def responseStr = restTemplateHelper.getResponseFromAPIs(stateUrl, pathVaraible)
+		def responseStr = googleAPIConnector.getResponseFromAPIs(stateUrl, pathVaraible)
 
 		if(StringUtils.isEmpty(responseStr)) {
 			responseStr = ""

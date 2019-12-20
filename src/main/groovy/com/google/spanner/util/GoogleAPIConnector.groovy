@@ -14,7 +14,7 @@ import groovy.util.logging.Slf4j
 
 @Component
 @Slf4j
-class RestTemplateHelper {
+class GoogleAPIConnector {
 
 
 	RestTemplate restTemplate = new RestTemplate()
