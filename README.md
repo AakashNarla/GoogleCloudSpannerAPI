@@ -1,12 +1,13 @@
 # GoogleCloudSpannerAPI
 
 ### Guides To Executing the program
-To Clean and Build:
+* To Clean and Build:
 ``` .\gradlew clean build ```
 
-To Run the application:
+* To Run the application:
 ``` .\gradlew bootRun ```
-
+* Once application is up, please open [http://localhost:8080](http://localhost:8080/) on any browser, it will redirect to Swagger UI.
+Updated API's will be add here for testing.
 
 ### Get Access tokne from Google Cloud Spanner API
 * Go to [Oauth2.0 Playground](https://developers.google.com/oauthplayground/) 
