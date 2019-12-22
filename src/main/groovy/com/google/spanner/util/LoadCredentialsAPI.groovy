@@ -40,29 +40,18 @@ class LoadCredentialsAPI {
 		return GoogleCredentials.fromStream(inp)
 	}
 
-	InstanceAdminClient getInstanceAdminClientCred(String url) {
-		InstanceAdminClient instanceAdminClient
+	Spanner getSpanner(String url) {
+		Spanner spanner
 		try {
 			GoogleCredentials credentials = createGoogleCredentials(url)
-			Spanner spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build()?.getService()
-			instanceAdminClient = spanner.getInstanceAdminClient()
+			spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build()?.getService()
 		} catch(Exception e) {
 			throw e
 		}
-		return instanceAdminClient
+
+		return spanner
 	}
 
-	DatabaseAdminClient getDatabaseAdminClient(String url) {
-		DatabaseAdminClient dbAdminClient
-		try {
-			GoogleCredentials credentials = createGoogleCredentials(url)
-			Spanner spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build()?.getService()
-			dbAdminClient = spanner.getDatabaseAdminClient()
-		} catch(Exception e) {
-		}
-
-		return dbAdminClient
-	}
 
 	DatabaseClient getDatabaseClient(String url, String project, String instance, String database) {
 		DatabaseClient dbClient

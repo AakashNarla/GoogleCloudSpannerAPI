@@ -39,6 +39,17 @@ public class InstanceAdminService {
 	@Autowired
 	LoadCredentialsAPI loadCredentialsAPI
 
+	private Spanner spanner
+
+	InstanceAdminClient getInstanceAdminClientCred(String url) {
+		try {
+			spanner = loadCredentialsAPI.getSpanner(url)
+		}catch (Exception e) {
+			throw e
+		}
+		return spanner?.getInstanceAdminClient()
+	}
+
 	public InstanceConfig getInstanceConfig(final String url, final String my_config_id) {
 		InstanceConfig instanceConfig
 		try{
@@ -52,7 +63,10 @@ public class InstanceAdminService {
 			}
 		} catch(Exception e) {
 			log.error("Exception {}", e.detailMessage)
+		}  finally {
+			spanner?.close()
 		}
+
 		return instanceConfig
 	}
 
@@ -66,7 +80,10 @@ public class InstanceAdminService {
 			log.error("StatusRunTimeException, {}", ex.detailMessage)
 		} catch(Exception e) {
 			log.error("Exception {}", e.detailMessage)
+		} finally {
+			spanner?.close()
 		}
+
 		return configs
 	}
 
@@ -83,13 +100,15 @@ public class InstanceAdminService {
 						.setDisplayName(instanceId)
 						.setNodeCount(node)
 						.build())
-						
+
 				Instance v = op.get()
 				return "Succesfully Created Instance Id : "+ v.getDisplayName()
 			} catch (ExecutionException e) {
 				throw (SpannerException) e.getCause()
 			} catch (InterruptedException e) {
 				throw SpannerExceptionFactory.propagateInterrupt(e)
+			} finally {
+				spanner?.close()
 			}
 		} else {
 			throw new ResourceNotFoundException("Missing Parameters", HttpStatus.NOT_FOUND.value(), "Important Parameters are missing")
@@ -110,7 +129,10 @@ public class InstanceAdminService {
 			}
 		} catch(Exception e) {
 			log.error("Exception {}", e.detailMessage)
+		} finally {
+			spanner?.close()
 		}
+
 		return ins
 	}
 
@@ -121,7 +143,10 @@ public class InstanceAdminService {
 			instances = Lists.newArrayList(loadCredentialsAPI.getInstanceAdminClientCred(url).listInstances(Options.pageSize(1)).iterateAll())
 		}catch(Exception e) {
 			log.error("Exception : {}", e.detailMessage)
+		} finally {
+			spanner?.close()
 		}
+
 		return instances
 	}
 
@@ -140,6 +165,8 @@ public class InstanceAdminService {
 		} catch(Exception e) {
 			log.error("Exception {}", e.message)
 			throw e
+		} finally {
+			spanner?.close()
 		}
 	}
 
@@ -165,6 +192,9 @@ public class InstanceAdminService {
 			throw (SpannerException) e.getCause()
 		} catch (InterruptedException e) {
 			throw SpannerExceptionFactory.propagateInterrupt(e)
+		} finally {
+			spanner?.close()
 		}
+
 	}
 }

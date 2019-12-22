@@ -13,7 +13,6 @@ import io.swagger.annotations.*;
 import com.google.cloud.spanner.Instance
 import com.google.cloud.spanner.InstanceConfig
 import com.google.spanner.service.InstanceAdminService
-import com.google.spanner.service.InstanceService
 
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
@@ -23,7 +22,7 @@ import io.swagger.annotations.Api
 @RequestMapping("/v1/spanner/instance/")
 @Api(tags = ["Instance"], description = "Spanner Instance API")
 @Slf4j
-class InstanceController {
+class InstanceAdminController {
 
 	@Autowired
 	InstanceAdminService spannerService

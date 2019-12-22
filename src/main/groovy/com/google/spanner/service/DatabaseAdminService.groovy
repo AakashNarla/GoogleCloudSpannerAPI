@@ -12,6 +12,8 @@ import com.google.cloud.spanner.SpannerExceptionFactory
 import com.google.cloud.spanner.SpannerOptions
 import com.google.common.collect.Iterables
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+import com.google.spanner.util.LoadCredentialsAPI
 
 import groovy.util.logging.Slf4j
 
@@ -20,51 +22,32 @@ import java.util.Arrays
 import java.util.List
 import java.util.concurrent.ExecutionException
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
 @Slf4j
 public class DatabaseAdminService {
 
-	private final DatabaseAdminClient dbAdminClient
+	@Autowired
+	LoadCredentialsAPI loadCredentialsAPI
 
-	public DatabaseAdminService() {
-		//this.dbAdminClient = dbAdminClient
-	}
+	private Spanner spanner
 
-	DatabaseAdminClient getDatabaseAdminClient() {
-		// [START get_dbadmin_client]
-		GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(jsonPath))
-		Spanner spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build().service
-		DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient()
-		// [END get_dbadmin_client]
-
-		return dbAdminClient
+	private DatabaseAdminClient getDatabaseAdminClient(String url) {
+		try {
+			spanner = loadCredentialsAPI.getSpanner(url)
+		}catch (Exception e) {
+			throw e
+		}
+		return spanner?.getDatabaseAdminClient()
 	}
 
 	/** Example to create database. */
-	// [TARGET createDatabase(String, String, Iterable)]
-	// [VARIABLE my_instance_id]
-	// [VARIABLE my_database_id]
-	public Database createDatabase(String instanceId, String databaseId) {
-		// [START createDatabase]
+	public Database createDatabase(String url, String instanceId, String databaseId) {
+
 		OperationFuture<Database, CreateDatabaseMetadata> op =
-				dbAdminClient.createDatabase(
-				instanceId,
-				databaseId,
-				Arrays.asList(
-				"CREATE TABLE Singers (\n"
-				+ "  SingerId   INT64 NOT NULL,\n"
-				+ "  FirstName  STRING(1024),\n"
-				+ "  LastName   STRING(1024),\n"
-				+ "  SingerInfo BYTES(MAX)\n"
-				+ ") PRIMARY KEY (SingerId)",
-				"CREATE TABLE Albums (\n"
-				+ "  SingerId     INT64 NOT NULL,\n"
-				+ "  AlbumId      INT64 NOT NULL,\n"
-				+ "  AlbumTitle   STRING(MAX)\n"
-				+ ") PRIMARY KEY (SingerId, AlbumId),\n"
-				+ "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"))
+				getDatabaseAdminClient(url).createDatabase(instanceId, databaseId, [])
 		Database db
 		try {
 			db = op.get()
@@ -72,78 +55,93 @@ public class DatabaseAdminService {
 			throw (SpannerException) e.getCause()
 		} catch (InterruptedException e) {
 			throw SpannerExceptionFactory.propagateInterrupt(e)
+		} finally {
+			spanner?.close()
 		}
-		// [END createDatabase]
+
 		return db
 	}
 
-	/** Example to getDatabase. */
-	// [TARGET getDatabase(String, String)]
-	// [VARIABLE my_instance_id]
-	// [VARIABLE my_database_id]
-	public Database getDatabase(String instanceId, String databaseId) {
-		// [START getDatabase]
-		Database db = dbAdminClient.getDatabase(instanceId, databaseId)
-		// [END getDatabase]
-		return db
-	}
+	
 
-	/** Example to update the database DDL. */
-	// [TARGET updateDatabaseDdl(String, String, Iterable, String)]
-	// [VARIABLE my_instance_id]
-	// [VARIABLE my_database_id]
-	public void updateDatabaseDdl(String instanceId, String databaseId) {
-		// [START updateDatabaseDdl]
+	/** getDatabase. */
+	public Database getDatabase(String url,String instanceId, String databaseId) {
+		Database db
 		try {
-			dbAdminClient
+			db = getDatabaseAdminClient(url).getDatabase(instanceId, databaseId)
+		} catch (Exception e) {
+			throw e
+		} finally {
+			spanner?.close()
+		}
+		return db
+	}
+
+	/** Alter the table database DDL. */
+	// Example Value : "ALTER TABLE Albums ADD COLUMN MarkingBdget INT64"
+	public Database updateTable(String url,String instanceId, String databaseId, String query) {
+		Database db
+		try {
+			OperationFuture<Void, UpdateDatabaseDdlMetadata> op = getDatabaseAdminClient(url)
 					.updateDatabaseDdl(
 					instanceId,
 					databaseId,
-					Arrays.asList("ALTER TABLE Albums ADD COLUMN MarketingBudget INT64"),
+					Arrays.asList(query),
 					null)
-					.get()
+			log.info(op.get())
+			db= op.get()
 		} catch (ExecutionException e) {
 			throw (SpannerException) e.getCause()
 		} catch (InterruptedException e) {
 			throw SpannerExceptionFactory.propagateInterrupt(e)
+		} finally {
+			spanner?.close()
 		}
-		// [END updateDatabaseDdl]
+		return db
 	}
 
-	/** Example to drop a Cloud Spanner database. */
-	// [TARGET dropDatabase(String, String)]
-	// [VARIABLE my_instance_id]
-	// [VARIABLE my_database_id]
-	public void dropDatabase(String instanceId, String databaseId) {
-		// [START dropDatabase]
-		dbAdminClient.dropDatabase(instanceId, databaseId)
-		// [END dropDatabase]
+	/** Drop a Cloud Spanner database. */
+	public void dropDatabase(String url,String instanceId, String databaseId) {
+		if(instanceId && databaseId) {
+			try {
+				getDatabaseAdminClient(url).dropDatabase(instanceId, databaseId)
+			} catch (Exception e) {
+				throw e
+			} finally {
+				spanner?.close()
+			}
+		}
 	}
 
 	/** Example to get the schema of a Cloud Spanner database. */
-	// [TARGET getDatabaseDdl(String, String)]
-	// [VARIABLE my_instance_id]
-	// [VARIABLE my_database_id]
-	public List<String> getDatabaseDdl(String instanceId, String databaseId) {
-		// [START getDatabaseDdl]
-		List<String> statementsInDb = dbAdminClient.getDatabaseDdl(instanceId, databaseId)
-		// [END getDatabaseDdl]
+	public List<String> getDatabaseDdl(String url,String instanceId, String databaseId) {
+		def statementsInDb
+		try {
+			statementsInDb = getDatabaseAdminClient(url).getDatabaseDdl(instanceId, databaseId)
+		} catch (Exception e) {
+			throw e
+		} finally {
+			spanner?.close()
+		}
 		return statementsInDb
 	}
 
-	/** Example to get the list of Cloud Spanner database in the given instance. */
-	// [TARGET listDatabases(String, ListOption...)]
-	// [VARIABLE my_instance_id]
-	public List<Database> listDatabases(String instanceId) {
-		// [START listDatabases]
-		Page<Database> page = dbAdminClient.listDatabases(instanceId, Options.pageSize(1))
-		List<Database> dbs = new ArrayList<>()
-		while (page != null) {
-			Database db = Iterables.getOnlyElement(page.getValues())
-			dbs.add(db)
-			page = page.getNextPage()
+	/**Get the list of Cloud Spanner database in the given instance. */
+	public List<Database> listDatabases(String url, String instanceId) {
+		def dbs
+		try {
+			Page<Database> page = getDatabaseAdminClient(url).listDatabases(instanceId, Options.pageSize(1))
+			dbs = new ArrayList<>()
+			while (page != null && page.getValues().size() > 0) {
+				Database db = Iterables.getOnlyElement(page.getValues())
+				dbs.add(db)
+				page = page.getNextPage()
+			}
+		}catch (Exception e) {
+			throw e
+		} finally {
+			spanner?.close()
 		}
-		// [END listDatabases]
 		return dbs
 	}
 }
