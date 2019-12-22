@@ -1,10 +1,12 @@
 package com.google.spanner.util
 
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-
+import org.springframework.web.server.ResponseStatusException
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.spanner.DatabaseAdminClient
 import com.google.cloud.spanner.DatabaseClient
@@ -18,8 +20,6 @@ import groovy.util.logging.Slf4j
 @Component
 @Slf4j
 class LoadCredentialsAPI {
-	@Value(value = "classpath:helical-fin.json")
-	private Resource companiesXml
 
 	public InputStream getInputStreamURL(String url) {
 		InputStream inputStream
@@ -29,14 +29,13 @@ class LoadCredentialsAPI {
 			inputStream = urlConnection.getInputStream()
 		} catch(Exception e) {
 			log.error("Exception Loading the file {} ", e.getMessage())
-			inputStream = null
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Credentials Not Found", e);
 		}
 		return inputStream
 	}
 
 	GoogleCredentials createGoogleCredentials(String url) {
 		InputStream inp = getInputStreamURL(url)
-		inp = inp ?:  companiesXml.getInputStream()
 		return GoogleCredentials.fromStream(inp)
 	}
 
