@@ -14,6 +14,7 @@ import com.google.cloud.spanner.DatabaseId
 import com.google.cloud.spanner.InstanceAdminClient
 import com.google.cloud.spanner.Spanner
 import com.google.cloud.spanner.SpannerOptions
+import com.google.spanner.exception.ResourceNotFoundException
 
 import groovy.util.logging.Slf4j
 
@@ -29,7 +30,7 @@ class LoadCredentialsAPI {
 			inputStream = urlConnection.getInputStream()
 		} catch(Exception e) {
 			log.error("Exception Loading the file {} ", e.getMessage())
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Credentials Not Found", e);
+			throw new ResourceNotFoundException("Credentials Missing", HttpStatus.NOT_FOUND.value(), "Credentials Not Found for Url Provided", e)
 		}
 		return inputStream
 	}
@@ -46,6 +47,7 @@ class LoadCredentialsAPI {
 			Spanner spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build()?.getService()
 			instanceAdminClient = spanner.getInstanceAdminClient()
 		} catch(Exception e) {
+			throw e
 		}
 		return instanceAdminClient
 	}

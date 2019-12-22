@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import io.swagger.annotations.*;
+
+import com.google.cloud.spanner.Instance
+import com.google.cloud.spanner.InstanceConfig
 import com.google.spanner.service.InstanceAdminService
 import com.google.spanner.service.InstanceService
 
@@ -25,6 +28,20 @@ class InstanceController {
 	@Autowired
 	InstanceAdminService spannerService
 
+	@ApiOperation(value = "Return All Spanner Instance Configs")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully Get All Instance Config"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/configs")
+	ResponseEntity<String> getAllInstanceConfigs(@RequestParam(name = "url", required = true)String url){
+		List<InstanceConfig> result = spannerService.listInstanceConfigs(url)
+		return ResponseEntity.ok().body(result)
+	}
+
 	@ApiOperation(value = "Return All Spanner Instance")
 	@ApiResponses(value = [
 		@ApiResponse(code = 200, message = "Successfully Get All Instance Config"),
@@ -35,9 +52,10 @@ class InstanceController {
 	)
 	@PostMapping("/")
 	ResponseEntity<String> getAllInstance(@RequestParam(name = "url", required = true)String url){
-		String result = spannerService.listInstanceConfigs(url)
+		List<Instance> result = spannerService.listInstances(url)
 		return ResponseEntity.ok().body(result)
 	}
+
 
 	@ApiOperation(value = "Create new Spanner instance")
 	@ApiResponses(value = [
@@ -52,8 +70,9 @@ class InstanceController {
 			@RequestParam(name = "url", required = true)String url,
 			@RequestParam(name = "projectId", required = true)String projectId,
 			@RequestParam(name = "instance-id", required = true)String instanceId,
-			@RequestParam(name = "config-id", required = true)String configId ){
-		String result = spannerService.createInstance(url, instanceId, configId, projectId)
+			@RequestParam(name = "config-id", required = true)String configId,
+			@RequestParam(name = "node-count", required = true)int nodeCount ){
+		String result = spannerService.createInstance(url, instanceId, configId, projectId, nodeCount)
 		return ResponseEntity.ok().body(result)
 	}
 
@@ -72,7 +91,7 @@ class InstanceController {
 		return ResponseEntity.ok().body(result)
 	}
 
-	@ApiOperation(value = "Return Spanner instance state")
+	@ApiOperation(value = "Return Spanner instance Config")
 	@ApiResponses(value = [
 		@ApiResponse(code = 200, message = "Successfully instance state"),
 		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),

@@ -17,6 +17,7 @@ import com.google.cloud.spanner.SpannerOptions
 import com.google.common.collect.Lists
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata
+import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.util.LoadCredentialsAPI
 import groovy.util.logging.Slf4j
 import io.grpc.StatusRuntimeException
@@ -55,7 +56,7 @@ public class InstanceAdminService {
 		return instanceConfig
 	}
 
-	/** Example to list instance configs. */
+	/** List all instance configs. */
 	public List<InstanceConfig> listInstanceConfigs(final String url) {
 		def configs
 		try{
@@ -71,18 +72,18 @@ public class InstanceAdminService {
 
 	/** Create an instance. */
 	public String createInstance(final String url,
-			final String instanceId, final String configId, final String clientProject) {
+			final String instanceId, final String configId, final String clientProject, final int node) {
 
-		if(instanceId && configId && clientProject ) {
-			OperationFuture<Instance, CreateInstanceMetadata> op =
-					loadCredentialsAPI.getInstanceAdminClientCred(url).createInstance(
-					InstanceInfo.newBuilder(InstanceId.of(clientProject, instanceId))
-					.setInstanceConfigId(InstanceConfigId.of(clientProject, configId))
-					.setDisplayName(instanceId)
-					.setNodeCount(1)
-					.build())
-					
+		if(instanceId && configId && clientProject && node ) {
 			try {
+				OperationFuture<Instance, CreateInstanceMetadata> op =
+						loadCredentialsAPI.getInstanceAdminClientCred(url).createInstance(
+						InstanceInfo.newBuilder(InstanceId.of(clientProject, instanceId))
+						.setInstanceConfigId(InstanceConfigId.of(clientProject, configId))
+						.setDisplayName(instanceId)
+						.setNodeCount(node)
+						.build())
+						
 				Instance v = op.get()
 				return "Succesfully Created Instance Id : "+ v.getDisplayName()
 			} catch (ExecutionException e) {
@@ -90,6 +91,8 @@ public class InstanceAdminService {
 			} catch (InterruptedException e) {
 				throw SpannerExceptionFactory.propagateInterrupt(e)
 			}
+		} else {
+			throw new ResourceNotFoundException("Missing Parameters", HttpStatus.NOT_FOUND.value(), "Important Parameters are missing")
 		}
 	}
 
@@ -111,7 +114,7 @@ public class InstanceAdminService {
 		return ins
 	}
 
-	/** List instances. */
+	/** List All Instances. */
 	public List<Instance> listInstances(final String url) {
 		List<Instance> instances
 		try {
@@ -135,7 +138,8 @@ public class InstanceAdminService {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance Not Found", ex);
 			}
 		} catch(Exception e) {
-			log.error("Exception {}", e.detailMessage)
+			log.error("Exception {}", e.message)
+			throw e
 		}
 	}
 
