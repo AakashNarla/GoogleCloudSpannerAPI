@@ -21,6 +21,9 @@ dependencies {
 	
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	
+	implementation 'com.google.cloud:google-cloud-storage:1.102.0'
+	implementation 'com.google.cloud:google-cloud-spanner:1.47.0'
 	implementation 'org.codehaus.groovy:groovy'
 	implementation 'org.codehaus.groovy:groovy-json:2.5.8'
 	//implementation 'org.codehaus.groovy:groovy-all:2.5.8'

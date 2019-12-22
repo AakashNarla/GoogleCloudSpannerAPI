@@ -10,11 +10,19 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.spanner.DatabaseAdminClientImpl
+import com.google.cloud.spanner.DatabaseClient
+import com.google.cloud.spanner.DatabaseId
+import com.google.cloud.spanner.Spanner
+import com.google.cloud.spanner.SpannerOptions
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
+import com.google.spanner.admin.database.v1.Database
 import groovy.util.logging.Slf4j
 
 @Component
 @Slf4j
-class GoogleAPIConnector {
+class GoogleDBConnector {
 
 	String baseUrl = "https://spanner.googleapis.com/v1/projects/{projectId}/instances/{instanceId}"
 	
@@ -22,12 +30,22 @@ class GoogleAPIConnector {
 	
 	RestTemplate restTemplate = new RestTemplate()
 
-	public String getResponseFromAPIs(String url, HashMap<String, String> pathVariables) {
+	public String getResponseFromAPIs(String jsonPath, SpannerOptions options, HashMap<String, String> pathVariables) {
 		ResponseEntity<String> responseEntity
 
 		if(restTemplate == null) {
 			restTemplate = new RestTemplate()
 		}
+		GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(jsonPath))
+		Spanner spanner = SpannerOptions.newBuilder().setCredentials(credentials).build().getService()
+		//Spanner spanner = options.getService()
+		String command = args[0];
+		DatabaseId dbId = DatabaseId.of(options.getProjectId(), instance, database);
+		DatabaseClient dbClient = spanner.getDatabaseClient(dbId)
+		
+		DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient()
+		//DatabaseAdminClientImpl dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), );
+		Database db = dbAdminClient.getDatabase(instance, databaseId)
 		String response = null
 		try {
 			if(pathVariables != null) {

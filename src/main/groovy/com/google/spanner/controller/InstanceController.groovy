@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import io.swagger.annotations.*;
+import com.google.spanner.service.InstanceAdminService
 import com.google.spanner.service.InstanceService
+
+import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
 import io.swagger.annotations.Api
 
@@ -20,7 +23,39 @@ import io.swagger.annotations.Api
 class InstanceController {
 
 	@Autowired
-	InstanceService spannerService
+	InstanceAdminService spannerService
+
+	@ApiOperation(value = "Return All Spanner Instance")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully Get All Instance Config"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/")
+	ResponseEntity<String> getAllInstance(@RequestParam(name = "url", required = true)String url){
+		String result = spannerService.listInstanceConfigs(url)
+		return ResponseEntity.ok().body(result)
+	}
+
+	@ApiOperation(value = "Create new Spanner instance")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully instance state"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/create")
+	ResponseEntity<String> createInstance(
+			@RequestParam(name = "url", required = true)String url,
+			@RequestParam(name = "projectId", required = true)String projectId,
+			@RequestParam(name = "instance-id", required = true)String instanceId,
+			@RequestParam(name = "config-id", required = true)String configId ){
+		String result = spannerService.createInstance(url, instanceId, configId, projectId)
+		return ResponseEntity.ok().body(result)
+	}
 
 	@ApiOperation(value = "Return Spanner instance state")
 	@ApiResponses(value = [
@@ -30,9 +65,41 @@ class InstanceController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@PostMapping("{project-id}/{instance-id}/")
-	String getInstanceState(@RequestParam(name = "access_token", required = true)String accessToken, @PathVariable(name = "project-id", required = true)String projectId, @PathVariable(name = "instance-id", required = true)String instanceId){
-		String result = spannerService.getInstanceState(accessToken, projectId, instanceId)
-		return result
+	@PostMapping("/{instance-id}")
+	ResponseEntity<String> getInstanceState(@PathVariable(name = "instance-id", required = true)String instanceId,
+			@RequestParam(name = "url", required = true)String url){
+		String result = spannerService.getInstance(url, instanceId)
+		return ResponseEntity.ok().body(result)
+	}
+
+	@ApiOperation(value = "Return Spanner instance state")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully instance state"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/{instance-id}/config")
+	ResponseEntity<String> getInstanceConfig(@PathVariable(name = "instance-id", required = true)String instanceId,
+			@RequestParam(name = "url", required = true)String url){
+		String result = spannerService.getInstanceConfig(url, instanceId)
+		return ResponseEntity.ok().body(result)
+	}
+
+	@ApiOperation(value = "Delete Spanner instance")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully Deleted"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/{instance-id}/delete")
+	ResponseEntity<String> deleteInstance(
+			@PathVariable(name = "instance-id", required = true)String instanceId,
+			@RequestParam(name = "url", required = true)String url){
+		String result = spannerService.deleteInstance(url, instanceId)
+		return ResponseEntity.ok().body(result)
 	}
 }
