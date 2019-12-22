@@ -1,12 +1,21 @@
 package com.google.spanner.util
 
 
+import java.security.InvalidKeyException
+import java.security.spec.InvalidKeySpecException
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException
+
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.http.HttpTransport
+import com.google.api.client.json.JsonFactory
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.auth.http.HttpTransportFactory
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.spanner.DatabaseAdminClient
 import com.google.cloud.spanner.DatabaseClient
@@ -37,14 +46,21 @@ class LoadCredentialsAPI {
 
 	GoogleCredentials createGoogleCredentials(String url) {
 		InputStream inp = getInputStreamURL(url)
+		//JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance()
+		//HttpTransportFactory httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 		return GoogleCredentials.fromStream(inp)
 	}
 
 	Spanner getSpanner(String url) {
 		Spanner spanner
 		try {
-			GoogleCredentials credentials = createGoogleCredentials(url)
-			spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build()?.getService()
+			GoogleCredentials credentials = createGoogleCredentials(url)	
+			if(!credentials?.clientId) {
+				throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), "CLient Id Not Found, Please recheck service account key", new IOException())
+			}	
+			spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build().getService()
+		} catch(IOException e) {
+			throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), e?.message, e)
 		} catch(Exception e) {
 			throw e
 		}

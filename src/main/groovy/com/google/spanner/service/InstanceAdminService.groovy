@@ -54,7 +54,7 @@ public class InstanceAdminService {
 		InstanceConfig instanceConfig
 		try{
 			if( my_config_id ) {
-				instanceConfig = loadCredentialsAPI.getInstanceAdminClientCred(url).getInstanceConfig(my_config_id)
+				instanceConfig = getInstanceAdminClientCred(url).getInstanceConfig(my_config_id)
 			}
 		} catch(SpannerException ex) {
 			if(ex.code == ErrorCode.NOT_FOUND.getCode()) {
@@ -62,7 +62,7 @@ public class InstanceAdminService {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance Not Found", ex);
 			}
 		} catch(Exception e) {
-			log.error("Exception {}", e.detailMessage)
+			log.error("Exception {}", e.message)
 		}  finally {
 			spanner?.close()
 		}
@@ -75,11 +75,11 @@ public class InstanceAdminService {
 		def configs
 		try{
 			configs = Lists.newArrayList(
-					loadCredentialsAPI.getInstanceAdminClientCred(url).listInstanceConfigs(Options.pageSize(1)).iterateAll())
+					getInstanceAdminClientCred(url).listInstanceConfigs(Options.pageSize(1)).iterateAll())
 		} catch(SpannerException ex) {
-			log.error("StatusRunTimeException, {}", ex.detailMessage)
+			log.error("StatusRunTimeException, {}", ex.message)
 		} catch(Exception e) {
-			log.error("Exception {}", e.detailMessage)
+			log.error("Exception {}", e.message)
 		} finally {
 			spanner?.close()
 		}
@@ -94,7 +94,7 @@ public class InstanceAdminService {
 		if(instanceId && configId && clientProject && node ) {
 			try {
 				OperationFuture<Instance, CreateInstanceMetadata> op =
-						loadCredentialsAPI.getInstanceAdminClientCred(url).createInstance(
+						getInstanceAdminClientCred(url).createInstance(
 						InstanceInfo.newBuilder(InstanceId.of(clientProject, instanceId))
 						.setInstanceConfigId(InstanceConfigId.of(clientProject, configId))
 						.setDisplayName(instanceId)
@@ -120,7 +120,7 @@ public class InstanceAdminService {
 		Instance ins
 		try{
 			if( my_instance_id ) {
-				ins = loadCredentialsAPI.getInstanceAdminClientCred(url).getInstance(my_instance_id)
+				ins = getInstanceAdminClientCred(url).getInstance(my_instance_id)
 			}
 		} catch(SpannerException ex) {
 			if(ex.code == ErrorCode.NOT_FOUND.getCode()) {
@@ -128,7 +128,7 @@ public class InstanceAdminService {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance Not Found", ex);
 			}
 		} catch(Exception e) {
-			log.error("Exception {}", e.detailMessage)
+			log.error("Exception {}", e.message)
 		} finally {
 			spanner?.close()
 		}
@@ -140,9 +140,10 @@ public class InstanceAdminService {
 	public List<Instance> listInstances(final String url) {
 		List<Instance> instances
 		try {
-			instances = Lists.newArrayList(loadCredentialsAPI.getInstanceAdminClientCred(url).listInstances(Options.pageSize(1)).iterateAll())
+			instances = Lists.newArrayList(getInstanceAdminClientCred(url).listInstances(Options.pageSize(1)).iterateAll())
 		}catch(Exception e) {
-			log.error("Exception : {}", e.detailMessage)
+			log.error("Exception : {}", e.message)
+			throw e
 		} finally {
 			spanner?.close()
 		}
@@ -154,7 +155,7 @@ public class InstanceAdminService {
 	public String deleteInstance(final String url, final String my_instance_id) {
 		try{
 			if( my_instance_id ) {
-				loadCredentialsAPI.getInstanceAdminClientCred(url).deleteInstance(my_instance_id)
+				getInstanceAdminClientCred(url).deleteInstance(my_instance_id)
 				return "Succesfully Deleted"
 			}
 		} catch(SpannerException ex) {
@@ -185,7 +186,7 @@ public class InstanceAdminService {
 				.build()
 		// Only update display name
 		OperationFuture<Instance, UpdateInstanceMetadata> op =
-				loadCredentialsAPI.getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.DISPLAY_NAME)
+				getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.DISPLAY_NAME)
 		try {
 			op.get()
 		} catch (ExecutionException e) {
