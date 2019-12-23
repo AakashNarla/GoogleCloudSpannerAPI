@@ -108,7 +108,7 @@ class DBAdminController {
 			@RequestParam(name = "url", required = true)String url,
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@PathVariable(name = "database", required = true)String database,
-			@ApiParam(name = "query",value="ALTER TABLE Albums ADD COLUMN XXX INT64 or CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)")
+			@ApiParam(name = "query",value="'CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)' OR 'ALTER TABLE Albums ADD COLUMN XXX INT64'")
 			@RequestParam(name = "query", required = true)String query){
 		def result = dbAdminService.updateTable(url, instanceId, database, query)
 		return ResponseEntity.ok().body(result)
