@@ -3,6 +3,7 @@
 ### Spanner API Documentation API
 Google Spanner API Documentation file : [Spanner API](https://raw.githubusercontent.com/AakashNarla/GoogleCloudSpannerAPI/master/google-spanner-api.yaml) 
 
+Open Documentation in [Editor Swagger](http://editor.swagger.io/)
 
 ### Guides To Executing the program
 * To Clean and Build:
