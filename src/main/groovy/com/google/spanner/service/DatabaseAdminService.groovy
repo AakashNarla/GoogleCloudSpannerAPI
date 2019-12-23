@@ -101,10 +101,11 @@ public class DatabaseAdminService {
 	}
 
 	/** Drop a Cloud Spanner database. */
-	public void dropDatabase(String url,String instanceId, String databaseId) {
+	public String dropDatabase(String url,String instanceId, String databaseId) {
 		if(instanceId && databaseId) {
 			try {
 				getDatabaseAdminClient(url).dropDatabase(instanceId, databaseId)
+				return "Succesfully Deleted"
 			} catch (Exception e) {
 				throw e
 			} finally {
