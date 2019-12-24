@@ -20,7 +20,7 @@ import com.google.cloud.spanner.TransactionContext
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable
 import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.util.LoadCredentialsAPI
-import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Mutation
 import com.google.cloud.spanner.ResultSet
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -70,6 +70,8 @@ class DBService {
 
 			dbClient.writeAtLeastOnce(Collections.singletonList(mutation))
 		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
 		} finally {
 			spanner.close()
 		}
@@ -86,6 +88,7 @@ class DBService {
 					.readRow("Singers", Key.of(singerId), Collections.singleton(column))
 			firstName = row.getString(column)
 		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
 		} finally {
 			spanner.close()
 		}
@@ -93,7 +96,7 @@ class DBService {
 	}
 
 	/** Example of single use with timestamp bound. */
-	public String singleUse(String url,String instanceId, String databaseId, long singerId) {
+	String singleUse(String url,String instanceId, String databaseId, long singerId) {
 		DatabaseClient dbClient
 		String firstName
 		try {
@@ -102,6 +105,8 @@ class DBService {
 			Struct row = dbClient.singleUse().readRow("Singers", Key.of(singerId), Collections.singleton(column))
 			firstName = row.getString(column)
 		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
 		} finally {
 			spanner.close()
 		}
@@ -109,56 +114,98 @@ class DBService {
 	}
 
 	// [START spanner_delete_data]
-	static void deleteExampleData(DatabaseClient dbClient) {
-		List<Mutation> mutations = new ArrayList<>();
-		// KeySet.singleKey() can be used to delete one row at a time.
-		mutations.add(
-				Mutation.delete(
-				"Singers", KeySet.singleKey(Key.newBuilder().append('singerId').build())))
-
-		dbClient.write(mutations);
-		System.out.printf("Records deleted.\n");
-	}
-	
-	// [START spanner_delete_data]
-	static void deleteTable(DatabaseClient dbClient) {
-		List<Mutation> mutations = new ArrayList<>();
-
-		// KeySet.all() can be used to delete all the rows in a table.
-		mutations.add(Mutation.delete("Albums", KeySet.all()));
-
-		
-		dbClient.write(mutations);
-		System.out.printf("Records deleted.\n");
-	}
-	// [END spanner_delete_data]
-	// [START spanner_dml_standard_delete]
-	static void deleteUsingDml(DatabaseClient dbClient) {
-	  dbClient
-		  .readWriteTransaction()
-		  .run(
-			  new TransactionCallable<Void>() {
-				@Override
-				public Void run(TransactionContext transaction) throws Exception {
-				  String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'";
-				  long rowCount = transaction.executeUpdate(Statement.of(sql));
-				  System.out.printf("%d record deleted.\n", rowCount);
-				  return null;
-				}
-			  });
-	}
-	// [START spanner_query_data]
-	static void query(DatabaseClient dbClient) {
+	boolean deleteData(String url, String instanceId, String databaseId, String tableName, List<String> pKeyList) {
+		DatabaseClient dbClient
+		boolean isSuccess
 		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			def mutations = new ArrayList<>()
+			if(pKeyList && pKeyList.size() > 0) {
+
+				for (String pKey in pKeyList) {
+					mutations.add(Mutation.delete(tableName, KeySet.singleKey(Key.newBuilder().append(pKey).build())))
+				}
+
+				dbClient.write(mutations)
+				isSuccess = true
+				log.info("Records deleted.\n")
+			}
+
+		} catch(e) {
+			isSuccess = false
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner.close()
+		}
+		return isSuccess
+	}
+
+	// [START spanner_delete_data]
+	boolean truncateTable(String url, String instanceId, String databaseId, String tableName) {
+		DatabaseClient dbClient
+		boolean isSuccess
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			def mutations = new ArrayList<>()
+			if (tableName) {
+				mutations.add(Mutation.delete(tableName, KeySet.all()))
+				dbClient.write(mutations)
+				isSuccess = true
+				log.info("Records deleted.\n")
+			}
+		} catch(e) {
+			isSuccess = false
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner.close()
+		}
+		return isSuccess
+	}
+
+	// [START spanner_dml_standard_delete]
+	int deleteUsingDml(String url, String instanceId, String databaseId, String query) {
+		DatabaseClient dbClient
+		long rowCount = -1
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			dbClient.readWriteTransaction().run(
+					new TransactionCallable<Void>() {
+						@Override
+						public Void run(TransactionContext transaction) throws Exception {
+							//String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'"
+							rowCount = transaction.executeUpdate(Statement.of(query))
+							log.info("Record deleted : {}", rowCount)
+							return null
+						}
+					})
+		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner.close()
+		}
+		return rowCount
+	}
+
+	// [START spanner_query_data]
+	void query(String url, String instanceId, String databaseId, String query) {
+		DatabaseClient dbClient
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			ResultSet resultSet = dbClient
 					.singleUse() // Execute a single read or query against Cloud Spanner.
 					.executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))
 			while (resultSet.next()) {
 				System.out.printf(
-						"%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
+						"%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2))
 			}
 		} catch(e) {
-
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner.close()
 		}
 	}
 }

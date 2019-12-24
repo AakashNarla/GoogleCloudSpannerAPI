@@ -17,15 +17,15 @@ import groovy.util.logging.Slf4j
 import io.swagger.annotations.Api
 
 @RestController
-@RequestMapping("/v1/spanner/{instance-id}/databases")
-@Api(tags = ["Database"], description = "Spanner Database Admin API")
+@RequestMapping("/v1/spanner/{instance-id}/{database}")
+@Api(tags = ["Table"], description = "Spanner Table Data API")
 @Slf4j
 class TableDataController {
 
 	@Autowired
-	DatabaseAdminService dbAdminService
+	DBService dbService
 
-	@ApiOperation(value = "Returns list of all databases")
+	@ApiOperation(value = "Delete the records as per ids")
 	@ApiResponses(value = [
 		@ApiResponse(code = 200, message = "Successfully retrieved list"),
 		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -33,33 +33,18 @@ class TableDataController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@PostMapping("/")
-	ResponseEntity<?> getDatabases(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId){
-		def result = dbAdminService.listDatabases(url, instanceId)
-		return ResponseEntity.ok().body(result)
-	}
-
-
-	@ApiOperation(value = "Create a Database")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully Create a database"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@PostMapping("/create/{database-name}")
-	ResponseEntity<?>  createDatabase(
+	@PostMapping("/{table}/delete")
+	ResponseEntity<?> deleteTable(
 			@RequestParam(name = "url", required = true)String url,
 			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database-name", required = true)String database){
-		def result = dbAdminService.createDatabase(url, instanceId, database)
+			@PathVariable(name = "database", required = true)String database,
+			@PathVariable(name = "table", required = true)String table){
+		def result = dbService.deleteData(url, instanceId, database, table, pKeyList)
 		return ResponseEntity.ok().body(result)
 	}
 
-	@ApiOperation(value = "Drop a Database")
+
+	@ApiOperation(value = "Trucate a Table")
 	@ApiResponses(value = [
 		@ApiResponse(code = 200, message = "Successfully Create a database"),
 		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -67,12 +52,31 @@ class TableDataController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@PostMapping("/drop/{database-name}")
+	@PostMapping("/{table}/delete/all")
+	ResponseEntity<?>  truncateTable(
+			@RequestParam(name = "url", required = true)String url,
+			@PathVariable(name = "instance-id", required = true)String instanceId,
+			@PathVariable(name = "database", required = true)String database,
+			@PathVariable(name = "table", required = true)String table){
+		def result = dbService.truncateTable(url, instanceId, database, table)
+		return ResponseEntity.ok().body(result)
+	}
+
+	@ApiOperation(value = "Delete the data as per query")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully deleted reocords count"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/delete/query")
 	ResponseEntity<?>  dropDatabase(
 			@RequestParam(name = "url", required = true)String url,
 			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database-name", required = true)String database){
-		def result = dbAdminService.dropDatabase(url, instanceId, database)
+			@PathVariable(name = "database", required = true)String database,
+			@RequestParam(name = "query", required = true)String query){
+		def result = dbService.deleteUsingDml(url, instanceId, database, query)
 		return ResponseEntity.ok().body(result)
 	}
 
@@ -84,33 +88,14 @@ class TableDataController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@PostMapping("/{database}/status")
+	@PostMapping("/{table}/get/query")
 	ResponseEntity<?>  getDatabaseState(
 			@RequestParam(name = "url", required = true)String url,
 			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database", required = true)String database){
-		def result = dbAdminService.getDatabase(url, instanceId, database)
-		return ResponseEntity.ok().body(result)
-	}
-
-
-
-	@ApiOperation(value = "Create/Alter a table in a database")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully Retrieve database state"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@PostMapping("/{database}/updatetable")
-	ResponseEntity<?> alterDatabaseTable(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@PathVariable(name = "database", required = true)String database,
-			@ApiParam(name = "query",value="'CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)' OR 'ALTER TABLE Albums ADD COLUMN XXX INT64'")
+			@PathVariable(name = "table", required = true)String table,
 			@RequestParam(name = "query", required = true)String query){
-		def result = dbAdminService.updateTable(url, instanceId, database, query)
+		def result = dbService.query(url, instanceId, database)
 		return ResponseEntity.ok().body(result)
 	}
 }
