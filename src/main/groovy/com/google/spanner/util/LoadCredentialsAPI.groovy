@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.json.JsonFactory
+import com.google.api.client.json.JsonParser
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.auth.http.HttpTransportFactory
 import com.google.auth.oauth2.GoogleCredentials
@@ -24,7 +25,7 @@ import com.google.cloud.spanner.InstanceAdminClient
 import com.google.cloud.spanner.Spanner
 import com.google.cloud.spanner.SpannerOptions
 import com.google.spanner.exception.ResourceNotFoundException
-
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
 @Component
@@ -54,10 +55,10 @@ class LoadCredentialsAPI {
 	Spanner getSpanner(String url) {
 		Spanner spanner
 		try {
-			GoogleCredentials credentials = createGoogleCredentials(url)	
+			GoogleCredentials credentials = createGoogleCredentials(url)
 			if(!credentials?.clientId) {
 				throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), "CLient Id Not Found, Please recheck service account key", new IOException())
-			}	
+			}
 			spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build().getService()
 		} catch(IOException e) {
 			throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), e?.message, e)
@@ -69,17 +70,5 @@ class LoadCredentialsAPI {
 	}
 
 
-	DatabaseClient getDatabaseClient(String url, String project, String instance, String database) {
-		DatabaseClient dbClient
-		try {
-			if(project && instance && database) {
-				GoogleCredentials credentials = createGoogleCredentials(url)
-				Spanner spanner  = SpannerOptions.newBuilder().setCredentials(credentials).build()?.getService()
-				DatabaseId db = DatabaseId.of(project, instance, database)
-				dbClient = spanner.getDatabaseClient(db)
-			}
-		} catch(Exception e) {
-		}
-		return dbClient
-	}
+	
 }
