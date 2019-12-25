@@ -1,5 +1,7 @@
 package com.google.spanner.service
 
+
+import java.sql.ResultSetMetaData
 import java.util.concurrent.TimeUnit
 
 import org.springframework.beans.factory.annotation.Autowired
@@ -7,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.Timestamp
 import com.google.cloud.spanner.DatabaseClient
 import com.google.cloud.spanner.DatabaseId
 import com.google.cloud.spanner.Spanner
@@ -18,9 +21,12 @@ import com.google.cloud.spanner.KeySet
 import com.google.cloud.spanner.TimestampBound
 import com.google.cloud.spanner.TransactionContext
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable
+import com.google.cloud.spanner.Type
 import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.util.LoadCredentialsAPI
+import com.google.spanner.util.TableDataBuilder
 import com.google.cloud.spanner.Mutation
+import com.google.cloud.spanner.ReadContext
 import com.google.cloud.spanner.ResultSet
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -28,7 +34,7 @@ import groovy.util.logging.Slf4j
 
 @Service
 @Slf4j
-class DBService {
+class TableDataService {
 
 	@Autowired
 	LoadCredentialsAPI loadCredentialsAPI
@@ -41,76 +47,92 @@ class DBService {
 		DatabaseClient dbClient
 		try {
 			String project = json?.project_id
-
-			if(project & instance && database) {
+			log.error("Project Id : {}",project)
+			if(project && instance && database) {
 				spanner = loadCredentialsAPI.getSpanner(url)
 				DatabaseId db = DatabaseId.of(project, instance, database)
 				dbClient = spanner.getDatabaseClient(db)
 			}
 		} catch(Exception e) {
-			throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), e?.message, e)
+			throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), e?.detailedMessage ?: e?.message, new Exception())
 		}
 		return dbClient
 	}
 
 	/** Example of unprotected blind write. */
-	public void writeAtLeastOnce(String url,String instanceId, String databaseId,long singerId) {
+	boolean writeAtLeastOnce(String url,String instanceId, String databaseId,String table, List<Map> insertDataList) {
 		DatabaseClient dbClient
 		try {
+			def mutations = new ArrayList<>()
 			dbClient = getDatabaseClient(url, instanceId, databaseId)
-			Mutation mutation =
-					Mutation.newInsertBuilder("Singers")
-					.set("SingerId")
-					.to(singerId)
-					.set("FirstName")
-					.to("Billy")
-					.set("LastName")
-					.to("Joel")
-					.build()
+			TableDataBuilder tdBuilder = new TableDataBuilder()
+			mutations = tdBuilder.createMutationist(table, insertDataList)
 
-			dbClient.writeAtLeastOnce(Collections.singletonList(mutation))
+			if(mutations && mutations.size() > 0) {
+				Timestamp tm = dbClient.write(mutations)
+				return true
+			} else {
+				return false
+			}
 		} catch(e) {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
 	}
 
 	/** Example of single use with timestamp bound. */
-	public String singleUseStale(String url,String instanceId, String databaseId, long singerId) {
+	public String singleUseStale(String url,String instanceId, String databaseId, String table, long singerId) {
 		DatabaseClient dbClient
 		String firstName
 		try {
 			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			String column = "FirstName"
 			Struct row = dbClient.singleUse(TimestampBound.ofMaxStaleness(10, TimeUnit.SECONDS))
-					.readRow("Singers", Key.of(singerId), Collections.singleton(column))
+					.readRow(table, Key.of(singerId), Collections.singleton(column))
 			firstName = row.getString(column)
 		} catch(e) {
 			log.error("Unexpected Error : {}",e.message)
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
 		return firstName
 	}
 
 	/** Example of single use with timestamp bound. */
-	String singleUse(String url,String instanceId, String databaseId, long singerId) {
+	String singleUse(String url,String instanceId, String databaseId, String table, Object singerId, String... coloumns) {
 		DatabaseClient dbClient
 		String firstName
 		try {
 			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			String column = "FirstName"
-			Struct row = dbClient.singleUse().readRow("Singers", Key.of(singerId), Collections.singleton(column))
+			Struct row = dbClient.singleUse().readRow(table, Key.of(singerId), Collections.singleton(column))
 			firstName = row.getString(column)
 		} catch(e) {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
 		return firstName
+	}
+
+	ResultSet executeQuery(String url,String instanceId, String databaseId, String table, String query) {
+		DatabaseClient dbClient
+		ResultSet resultSet
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			ReadContext readContext = dbClient.singleUse();
+			resultSet =
+					readContext.executeQuery(Statement.of(query))
+		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner?.close()
+		}
+		return resultSet
 	}
 
 	// [START spanner_delete_data]
@@ -136,7 +158,7 @@ class DBService {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
 		return isSuccess
 	}
@@ -159,7 +181,7 @@ class DBService {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
 		return isSuccess
 	}
@@ -184,28 +206,88 @@ class DBService {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
 		return rowCount
 	}
 
 	// [START spanner_query_data]
-	void query(String url, String instanceId, String databaseId, String query) {
+	List<Map> query(String url, String instanceId, String databaseId, String query) {
 		DatabaseClient dbClient
+		List<Map> finalList = new ArrayList()
+
 		try {
 			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			ResultSet resultSet = dbClient
 					.singleUse() // Execute a single read or query against Cloud Spanner.
-					.executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))
+					.executeQuery(Statement.of(query))
 			while (resultSet.next()) {
-				System.out.printf(
-						"%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2))
+				def outputMap = [:]
+				int count = resultSet.getColumnCount()
+				for (int i = 0; i < count; i++)
+				{
+					outputMap.put(i+1, getObjectFromQuery(resultSet, i))
+				}
+				finalList.add(outputMap)
+
 			}
 		} catch(e) {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
-			spanner.close()
+			spanner?.close()
 		}
+		return finalList
+	}
+
+	Object getObjectFromQuery(ResultSet resultSet, int i) {
+		Type type = resultSet.getColumnType(i)
+		Object returnObject
+		switch(type) {
+			case Type.TYPE_INT64:
+				returnObject = resultSet.getLong(i)
+				break;
+			case Type.TYPE_FLOAT64:
+				returnObject = resultSet.getLong(i)
+				break;
+			case Type.TYPE_STRING:
+				returnObject = resultSet.getString(i)
+				break;
+			case Type.TYPE_TIMESTAMP:
+				returnObject = resultSet.getTimestamp(i)
+				break;
+			case Type.TYPE_DATE:
+				returnObject = resultSet.getDate(i)
+				break;
+			case Type.TYPE_BYTES:
+				returnObject = resultSet.getBytes(i)
+				break;
+			case Type.TYPE_ARRAY_BOOL:
+				returnObject = resultSet.getBooleanArray(i)
+				break;
+			case Type.TYPE_ARRAY_BYTES:
+				returnObject = resultSet.getBytesList(i)
+				break;
+			case Type.TYPE_ARRAY_DATE:
+				returnObject = resultSet.getDateList(i)
+				break;
+			case Type.TYPE_ARRAY_TIMESTAMP:
+				returnObject = resultSet.getTimestampList(i)
+				break;
+			case Type.TYPE_ARRAY_FLOAT64:
+				returnObject = resultSet.getLongArray(i)
+				break;
+			case Type.TYPE_ARRAY_INT64:
+				returnObject = resultSet.getDoubleList(i)
+				break;
+			case Type.TYPE_ARRAY_STRING:
+				returnObject = resultSet.getStringList(i)
+				break;
+
+			default:
+				returnObject = null
+				break;
+		}
+		return returnObject
 	}
 }

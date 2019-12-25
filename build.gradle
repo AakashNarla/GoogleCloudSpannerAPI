@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.2.2.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
 	id 'groovy'
+	id 'codenarc'
 }
 
 group = 'com.spring'
@@ -39,4 +40,11 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+codenarc {
+    toolVersion = '1.4' 
+    configFile = file("${rootProject.projectDir}/config/codenarc/rules.groovy") 
+    reportFormat = 'html' 
+    ignoreFailures = true 
 }

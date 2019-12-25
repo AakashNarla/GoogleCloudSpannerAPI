@@ -91,9 +91,14 @@ public class DatabaseAdminService {
 			log.info(op.get())
 			db= op.get()
 		} catch (ExecutionException e) {
+			log.error("Unexpected Error : {}",e.message)
 			throw (SpannerException) e.getCause()
 		} catch (InterruptedException e) {
+			log.error("Unexpected Error : {}",e.message)
 			throw SpannerExceptionFactory.propagateInterrupt(e)
+		} catch (Exception e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
 		} finally {
 			spanner?.close()
 		}
