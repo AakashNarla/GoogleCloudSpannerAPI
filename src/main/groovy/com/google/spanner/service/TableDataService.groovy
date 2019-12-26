@@ -21,6 +21,7 @@ import com.google.cloud.spanner.KeySet
 import com.google.cloud.spanner.TimestampBound
 import com.google.cloud.spanner.TransactionContext
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable
+import com.google.common.base.Joiner
 import com.google.cloud.spanner.Type
 import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.util.LoadCredentialsAPI
@@ -60,7 +61,7 @@ class TableDataService {
 	}
 
 	/** Example of unprotected blind write. */
-	boolean writeAtLeastOnce(String url,String instanceId, String databaseId,String table, List<Map> insertDataList) {
+	String writeAtLeastOnce(String url,String instanceId, String databaseId,String table, List<Map> insertDataList) {
 		DatabaseClient dbClient
 		try {
 			def mutations = new ArrayList<>()
@@ -70,9 +71,9 @@ class TableDataService {
 
 			if(mutations && mutations.size() > 0) {
 				Timestamp tm = dbClient.write(mutations)
-				return true
+				return "Succesfully Inserted data"
 			} else {
-				return false
+				return "Something went wrong while inserting data"
 			}
 		} catch(e) {
 			log.error("Unexpected Error : {}",e.message)
@@ -127,21 +128,34 @@ class TableDataService {
 	}
 
 	/** Example of single use with timestamp bound. */
-	String singleUse(String url,String instanceId, String databaseId, String table, Object singerId, String... coloumns) {
+	List<Map> selectSemiQuery(String url,String instanceId, String databaseId, String table, String whereCondition, Set<String> fields) {
 		DatabaseClient dbClient
-		String firstName
+		List<Map> finalList = new ArrayList()
 		try {
 			dbClient = getDatabaseClient(url, instanceId, databaseId)
-			String column = "FirstName"
-			Struct row = dbClient.singleUse().readRow(table, Key.of(singerId), Collections.singleton(column))
-			firstName = row.getString(column)
+
+			Joiner joiner = Joiner.on(',')
+			Statement query = Statement.newBuilder("SELECT ")
+					.append(joiner.join(fields))
+					.append(" FROM ")
+					.append(table)
+					.append(whereCondition ? "where "+ whereCondition : "")
+					.build()
+			ResultSet resultSet = dbClient.singleUse(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES)).executeQuery(query)
+			while (resultSet.next()) {
+				def outputMap = [:]
+				for(String field : fields) {
+					outputMap.put(field, getObjectFromQuery(resultSet, 0, field))
+				}
+				finalList.add(outputMap)
+			}
 		} catch(e) {
 			log.error("Unexpected Error : {}",e.message)
 			throw e
 		} finally {
 			spanner?.close()
 		}
-		return firstName
+		return finalList
 	}
 
 
@@ -190,7 +204,7 @@ class TableDataService {
 				int count = resultSet.getColumnCount()
 				for (int i = 0; i < count; i++)
 				{
-					outputMap.put(i+1, getObjectFromQuery(resultSet, i))
+					outputMap.put(i+1, getObjectFromQuery(resultSet, i, null))
 				}
 				finalList.add(outputMap)
 
@@ -204,48 +218,48 @@ class TableDataService {
 		return finalList
 	}
 
-	Object getObjectFromQuery(ResultSet resultSet, int i) {
-		Type type = resultSet.getColumnType(i)
+	Object getObjectFromQuery(ResultSet resultSet, int i, String columnName) {
+		Type type = resultSet.getColumnType(columnName ?: i)
 		Object returnObject
 		switch(type) {
 			case Type.TYPE_INT64:
-				returnObject = resultSet.getLong(i)
+				returnObject = resultSet.getLong(columnName ?: i)
 				break;
 			case Type.TYPE_FLOAT64:
-				returnObject = resultSet.getLong(i)
+				returnObject = resultSet.getLong(columnName ?: i)
 				break;
 			case Type.TYPE_STRING:
-				returnObject = resultSet.getString(i)
+				returnObject = resultSet.getString(columnName ?: i)
 				break;
 			case Type.TYPE_TIMESTAMP:
-				returnObject = resultSet.getTimestamp(i)
+				returnObject = resultSet.getTimestamp(columnName ?: i)
 				break;
 			case Type.TYPE_DATE:
-				returnObject = resultSet.getDate(i)
+				returnObject = resultSet.getDate(columnName ?: i)
 				break;
 			case Type.TYPE_BYTES:
-				returnObject = resultSet.getBytes(i)
+				returnObject = resultSet.getBytes(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_BOOL:
-				returnObject = resultSet.getBooleanArray(i)
+				returnObject = resultSet.getBooleanArray(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_BYTES:
-				returnObject = resultSet.getBytesList(i)
+				returnObject = resultSet.getBytesList(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_DATE:
-				returnObject = resultSet.getDateList(i)
+				returnObject = resultSet.getDateList(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_TIMESTAMP:
-				returnObject = resultSet.getTimestampList(i)
+				returnObject = resultSet.getTimestampList(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_FLOAT64:
-				returnObject = resultSet.getLongArray(i)
+				returnObject = resultSet.getLongArray(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_INT64:
-				returnObject = resultSet.getDoubleList(i)
+				returnObject = resultSet.getDoubleList(columnName ?: i)
 				break;
 			case Type.TYPE_ARRAY_STRING:
-				returnObject = resultSet.getStringList(i)
+				returnObject = resultSet.getStringList(columnName ?: i)
 				break;
 
 			default:

@@ -62,31 +62,31 @@ class TableDataBuilder {
 	public Mutation create1Mutation(String tableName, Map insertData, String... keys) {
 
 		return Mutation.newInsertOrUpdateBuilder(tableName)
-				.set(keys[0]).to(insertData?.keys[0])
+				.set(keys[0]).to(insertData?.get(keys[0]))
 				.build()
 	}
 
 	public Mutation create2Mutation(String tableName, Map insertData, String... keys) {
 		return Mutation.newInsertOrUpdateBuilder(tableName)
-				.set(keys[0]).to(insertData?.keys[0])
-				.set(keys[1]).to(insertData?.keys[1])
+				.set(keys[0]).to(insertData?.get(keys[0]))
+				.set(keys[1]).to(insertData?.get(keys[1]))
 				.build()
 	}
 
 	public Mutation create3Mutation(String tableName, Map insertData, String... keys) {
 		return Mutation.newInsertOrUpdateBuilder(tableName)
-				.set(keys[0]).to(insertData?.keys[0])
-				.set(keys[1]).to(insertData?.keys[1])
-				.set(keys[2]).to(insertData?.keys[2])
+				.set(keys[0]).to(insertData?.get(keys[0]))
+				.set(keys[1]).to(insertData?.get(keys[1]))
+				.set(keys[2]).to(insertData?.get(keys[2]))
 				.build()
 	}
 
 	public Mutation create4Mutation(String tableName, Map insertData, String... keys) {
 		return Mutation.newInsertOrUpdateBuilder(tableName)
-				.set(keys[0]).to(insertData?.keys[0])
-				.set(keys[1]).to(insertData?.keys[1])
-				.set(keys[2]).to(insertData?.keys[2])
-				.set(keys[3]).to(insertData?.keys[3])
+				.set(keys[0]).to(insertData?.get(keys[0]))
+				.set(keys[1]).to(insertData?.get(keys[1]))
+				.set(keys[2]).to(insertData?.get(keys[2]))
+				.set(keys[3]).to(insertData?.get(keys[3]))
 				.build()
 	}
 

@@ -85,7 +85,7 @@ class TableDataController {
 		return ResponseEntity.ok().body(result)
 	}
 
-	@ApiOperation(value = "Returns the Data using primary keys")
+	@ApiOperation(value = "Returns the Data with coloumn name")
 	@ApiResponses(value = [
 		@ApiResponse(code = 200, message = "Successfully Retrieve database state"),
 		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -99,9 +99,10 @@ class TableDataController {
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@PathVariable(name = "database", required = true)String database,
 			@PathVariable(name = "table", required = true)String table,
-			@PathVariable(name = "primarykey", required = true)String pkey,
-			@RequestParam(name = "coloumns", required = true)String coloumns){
-		def result = tableDataService.singleUse(url, instanceId, database, table, pkey, coloumns)
+			@ApiParam(name = "where-condition", value="'id > 1' or 'LIMIT 100'")
+			@PathVariable(name = "where-condition", required = false )String whereCondition,
+			@RequestParam(name = "columns", required = true)Set<String> columns){
+		def result = tableDataService.selectSemiQuery(url, instanceId, database, table, whereCondition, columns)
 		return ResponseEntity.ok().body(result)
 	}
 

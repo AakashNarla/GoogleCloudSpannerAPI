@@ -10,6 +10,7 @@ import com.google.cloud.spanner.Spanner
 import com.google.cloud.spanner.SpannerException
 import com.google.cloud.spanner.SpannerExceptionFactory
 import com.google.cloud.spanner.SpannerOptions
+import com.google.cloud.spanner.TimestampBound
 import com.google.common.collect.Iterables
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
@@ -21,6 +22,7 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.List
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -50,7 +52,7 @@ public class DatabaseAdminService {
 				getDatabaseAdminClient(url).createDatabase(instanceId, databaseId, [])
 		Database db
 		try {
-			db = op.get()
+			db = op.get(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES))
 		} catch (ExecutionException e) {
 			throw (SpannerException) e.getCause()
 		} catch (InterruptedException e) {
@@ -79,8 +81,8 @@ public class DatabaseAdminService {
 
 	/** Alter the table database DDL. */
 	// Example Value : "ALTER TABLE Albums ADD COLUMN MarkingBdget INT64"
-	public Database updateTable(String url,String instanceId, String databaseId, String query) {
-		Database db
+	public String updateTable(String url,String instanceId, String databaseId, String query) {
+		String db
 		try {
 			OperationFuture<Void, UpdateDatabaseDdlMetadata> op = getDatabaseAdminClient(url)
 					.updateDatabaseDdl(
@@ -89,7 +91,8 @@ public class DatabaseAdminService {
 					Arrays.asList(query),
 					null)
 			log.info(op.get())
-			db= op.get()
+			 op.get(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES))
+			 db= "Succesfully updated"
 		} catch (ExecutionException e) {
 			log.error("Unexpected Error : {}",e.message)
 			throw (SpannerException) e.getCause()
