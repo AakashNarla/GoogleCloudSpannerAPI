@@ -61,7 +61,8 @@ class TableDataController {
 			@RequestParam(name = "url", required = true)String url,
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@PathVariable(name = "database", required = true)String database,
-			@PathVariable(name = "table", required = true)String table){
+			@PathVariable(name = "table", required = true)String table,
+			@RequestParam(name = "primary-key", required = true)List<String> pKeyList){
 		def result = tableDataService.deleteData(url, instanceId, database, table, pKeyList)
 		return ResponseEntity.ok().body(result)
 	}
@@ -100,7 +101,7 @@ class TableDataController {
 			@PathVariable(name = "database", required = true)String database,
 			@PathVariable(name = "table", required = true)String table,
 			@ApiParam(name = "where-condition", value="'id > 1' or 'LIMIT 100'")
-			@PathVariable(name = "where-condition", required = false )String whereCondition,
+			@RequestParam(name = "where-condition", required = false )String whereCondition,
 			@RequestParam(name = "columns", required = true)Set<String> columns){
 		def result = tableDataService.selectSemiQuery(url, instanceId, database, table, whereCondition, columns)
 		return ResponseEntity.ok().body(result)
@@ -120,7 +121,7 @@ class TableDataController {
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@PathVariable(name = "database", required = true)String database,
 			@PathVariable(name = "table", required = true)String table,
-			@RequestBody(required = true)List<Map<String, String>> requestBody){
+			@RequestBody(required = true) List<Map<String, String>> requestBody){
 		def result = tableDataService.writeAtLeastOnce(url, instanceId, database, table, requestBody)
 		return ResponseEntity.ok().body(result)
 	}

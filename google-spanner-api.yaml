@@ -1,13 +1,11 @@
 swagger: '2.0'
 info:
-  description: Api Documentation
-  version: '1.0'
-  title: Api Documentation
-  termsOfService: 'urn:tos'
-  contact: {}
+  description: '"Spanner REST API for Big Id"'
+  version: 1.0.0
+  title: Google Spanner REST API
   license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0'
+    name: Apache License Version 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0"'
 host: 'localhost:8080'
 basePath: /
 tags:
@@ -15,6 +13,8 @@ tags:
     description: Spanner Database Admin API
   - name: Instance
     description: Spanner Instance API
+  - name: Table
+    description: Spanner Table Data API
 paths:
   /v1/spanner/instance/:
     post:
@@ -50,7 +50,7 @@ paths:
     post:
       tags:
         - Instance
-      summary: Return All Spanner Instance Configs
+      summary: Return All Spanner Instance Config Data
       operationId: getAllInstanceConfigsUsingPOST
       consumes:
         - application/json
@@ -103,11 +103,6 @@ paths:
           required: true
           type: integer
           format: int32
-        - name: projectId
-          in: query
-          description: projectId
-          required: true
-          type: string
         - name: url
           in: query
           description: url
@@ -115,7 +110,53 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully instance state
+          description: Successfully created a new instance
+          schema:
+            type: string
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  /v1/spanner/instance/update:
+    post:
+      tags:
+        - Instance
+      summary: Update an existing Spanner instance display name and node count
+      operationId: updateInstanceUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: instance-id
+          in: query
+          description: instance-id
+          required: true
+          type: string
+        - name: newDisplayName
+          in: query
+          description: newDisplayName
+          required: true
+          type: string
+        - name: node-count
+          in: query
+          description: node-count
+          required: true
+          type: integer
+          format: int32
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully updated instance
           schema:
             type: string
         '201':
@@ -198,13 +239,11 @@ paths:
           description: The resource you were trying to reach is not found
       deprecated: false
   '/v1/spanner/instance/{instance-id}/delete':
-    post:
+    delete:
       tags:
         - Instance
       summary: Delete Spanner instance
-      operationId: deleteInstanceUsingPOST
-      consumes:
-        - application/json
+      operationId: deleteInstanceUsingDELETE
       produces:
         - '*/*'
       parameters:
@@ -223,8 +262,8 @@ paths:
           description: Successfully Deleted
           schema:
             type: string
-        '201':
-          description: Created
+        '204':
+          description: No Content
         '401':
           description: You are not authorized to view the resource
         '403':
@@ -308,13 +347,11 @@ paths:
           description: The resource you were trying to reach is not found
       deprecated: false
   '/v1/spanner/{instance-id}/databases/drop/{database-name}':
-    post:
+    delete:
       tags:
         - Database
       summary: Drop a Database
-      operationId: dropDatabaseUsingPOST
-      consumes:
-        - application/json
+      operationId: dropDatabaseUsingDELETE
       produces:
         - '*/*'
       parameters:
@@ -338,8 +375,8 @@ paths:
           description: Successfully Create a database
           schema:
             type: object
-        '201':
-          description: Created
+        '204':
+          description: No Content
         '401':
           description: You are not authorized to view the resource
         '403':
@@ -387,11 +424,189 @@ paths:
         '404':
           description: The resource you were trying to reach is not found
       deprecated: false
-  '/v1/spanner/{instance-id}/databases/{database}/updatetable':
+  '/v1/spanner/{instance-id}/{database}/query/delete':
+    delete:
+      tags:
+        - Table
+      summary: Delete the data using query
+      operationId: dropDatabaseUsingDELETE_1
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: query
+          in: query
+          description: query
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted reocords count
+          schema:
+            type: object
+        '204':
+          description: No Content
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/query/get':
     post:
       tags:
-        - Database
-      summary: Create/Alter a table in a database
+        - Table
+      summary: Get data using Query
+      operationId: getTableQueryUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: query
+          in: query
+          description: query
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully Retrieve database state
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/query/insert':
+    post:
+      tags:
+        - Table
+      summary: Insert the Data using query
+      operationId: insertTableDataQueryUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: query
+          in: query
+          description: query
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully Retrieve database state
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/query/update':
+    post:
+      tags:
+        - Table
+      summary: Update the Data using query
+      operationId: updateTableDataUsingQueryUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: query
+          in: query
+          description: query
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully Retrieve database state
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/table':
+    post:
+      tags:
+        - Table
+      summary: Create/Alter/Drop a table in a database
       operationId: alterDatabaseTableUsingPOST
       consumes:
         - application/json
@@ -421,6 +636,159 @@ paths:
           type: string
       responses:
         '200':
+          description: Successfully Create/Alter/Drop table
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/{table}/delete':
+    delete:
+      tags:
+        - Table
+      summary: Delete the records as per ids
+      operationId: deleteTableUsingDELETE
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: primary-key
+          in: query
+          description: primary-key
+          required: true
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: table
+          in: path
+          description: table
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved list
+          schema:
+            type: object
+        '204':
+          description: No Content
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/{table}/delete/all':
+    delete:
+      tags:
+        - Table
+      summary: Trucate a Table
+      operationId: truncateTableUsingDELETE
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: table
+          in: path
+          description: table
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully Create a database
+          schema:
+            type: object
+        '204':
+          description: No Content
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/{table}/get':
+    post:
+      tags:
+        - Table
+      summary: Returns the Data with coloumn name
+      operationId: getTableDataUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: columns
+          in: query
+          description: columns
+          required: true
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: table
+          in: path
+          description: table
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+        - name: where-condition
+          in: query
+          description: '''id > 1'' or ''LIMIT 100'''
+          required: false
+          type: string
+          allowEmptyValue: false
+      responses:
+        '200':
           description: Successfully Retrieve database state
           schema:
             type: object
@@ -433,3 +801,62 @@ paths:
         '404':
           description: The resource you were trying to reach is not found
       deprecated: false
+  '/v1/spanner/{instance-id}/{database}/{table}/insert':
+    post:
+      tags:
+        - Table
+      summary: Insert the Data
+      operationId: insertTableDataUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - in: body
+          name: requestBody
+          description: requestBody
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Map«string,string»'
+        - name: table
+          in: path
+          description: table
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully Retrieve database state
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+definitions:
+  'Map«string,string»':
+    type: object
+    title: 'Map«string,string»'
+    additionalProperties:
+      type: string
