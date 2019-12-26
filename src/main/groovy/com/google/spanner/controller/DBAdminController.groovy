@@ -3,6 +3,7 @@ package com.google.spanner.controller
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -67,7 +68,7 @@ class DBAdminController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@PostMapping("/drop/{database-name}")
+	@DeleteMapping("/drop/{database-name}")
 	ResponseEntity<?>  dropDatabase(
 			@RequestParam(name = "url", required = true)String url,
 			@PathVariable(name = "instance-id", required = true)String instanceId,

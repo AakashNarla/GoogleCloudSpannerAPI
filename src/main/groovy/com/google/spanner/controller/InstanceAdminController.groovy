@@ -2,6 +2,7 @@ package com.google.spanner.controller
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -27,7 +28,7 @@ class InstanceAdminController {
 	@Autowired
 	InstanceAdminService spannerService
 
-	@ApiOperation(value = "Return All Spanner Instance Configs")
+	@ApiOperation(value = "Return All Spanner Instance Config Data")
 	@ApiResponses(value = [
 		@ApiResponse(code = 200, message = "Successfully Get All Instance Config"),
 		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -58,7 +59,7 @@ class InstanceAdminController {
 
 	@ApiOperation(value = "Create new Spanner instance")
 	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully instance state"),
+		@ApiResponse(code = 200, message = "Successfully created a new instance"),
 		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
 		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
@@ -67,11 +68,28 @@ class InstanceAdminController {
 	@PostMapping("/create")
 	ResponseEntity<String> createInstance(
 			@RequestParam(name = "url", required = true)String url,
-			@RequestParam(name = "projectId", required = true)String projectId,
 			@RequestParam(name = "instance-id", required = true)String instanceId,
 			@RequestParam(name = "config-id", required = true)String configId,
 			@RequestParam(name = "node-count", required = true)int nodeCount ){
-		String result = spannerService.createInstance(url, instanceId, configId, projectId, nodeCount)
+		String result = spannerService.createInstance(url, instanceId, configId, nodeCount)
+		return ResponseEntity.ok().body(result)
+	}
+
+	@ApiOperation(value = "Update an existing Spanner instance display name and node count")
+	@ApiResponses(value = [
+		@ApiResponse(code = 200, message = "Successfully updated instance"),
+		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	]
+	)
+	@PostMapping("/update")
+	ResponseEntity<String> updateInstance (
+			@RequestParam(name = "url", required = true)String url,
+			@RequestParam(name = "instance-id", required = true)String instanceId,
+			@RequestParam(name = "newDisplayName", required = true)String newDisplayName,
+			@RequestParam(name = "node-count", required = true)int nodeCount ){
+		String result = spannerService.updateInstance(url, instanceId, newDisplayName, nodeCount)
 		return ResponseEntity.ok().body(result)
 	}
 
@@ -113,7 +131,7 @@ class InstanceAdminController {
 		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	]
 	)
-	@PostMapping("/{instance-id}/delete")
+	@DeleteMapping("/{instance-id}/delete")
 	ResponseEntity<String> deleteInstance(
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@RequestParam(name = "url", required = true)String url){

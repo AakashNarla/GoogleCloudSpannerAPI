@@ -82,6 +82,32 @@ class TableDataService {
 		}
 	}
 
+	int insertorUpdateUsingDml(String url,String instanceId, String databaseId, String query) {
+		DatabaseClient dbClient
+		long rowCount = -1
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+
+			dbClient.readWriteTransaction().run(
+					new TransactionCallable<Void>() {
+						@Override
+						public Void run(TransactionContext transaction) throws Exception {
+							rowCount = transaction.executeUpdate(Statement.of(query));
+							log.info("Record inserted {}", rowCount)
+							return null
+						}
+					});
+		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner?.close()
+		}
+		return rowCount.intValue()
+	}
+
+
+
 	/** Example of single use with timestamp bound. */
 	public String singleUseStale(String url,String instanceId, String databaseId, String table, long singerId) {
 		DatabaseClient dbClient
@@ -118,22 +144,6 @@ class TableDataService {
 		return firstName
 	}
 
-	ResultSet executeQuery(String url,String instanceId, String databaseId, String table, String query) {
-		DatabaseClient dbClient
-		ResultSet resultSet
-		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
-			ReadContext readContext = dbClient.singleUse();
-			resultSet =
-					readContext.executeQuery(Statement.of(query))
-		} catch(e) {
-			log.error("Unexpected Error : {}",e.message)
-			throw e
-		} finally {
-			spanner?.close()
-		}
-		return resultSet
-	}
 
 	// [START spanner_delete_data]
 	boolean deleteData(String url, String instanceId, String databaseId, String tableName, List<String> pKeyList) {
@@ -163,53 +173,7 @@ class TableDataService {
 		return isSuccess
 	}
 
-	// [START spanner_delete_data]
-	boolean truncateTable(String url, String instanceId, String databaseId, String tableName) {
-		DatabaseClient dbClient
-		boolean isSuccess
-		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
-			def mutations = new ArrayList<>()
-			if (tableName) {
-				mutations.add(Mutation.delete(tableName, KeySet.all()))
-				dbClient.write(mutations)
-				isSuccess = true
-				log.info("Records deleted.\n")
-			}
-		} catch(e) {
-			isSuccess = false
-			log.error("Unexpected Error : {}",e.message)
-			throw e
-		} finally {
-			spanner?.close()
-		}
-		return isSuccess
-	}
 
-	// [START spanner_dml_standard_delete]
-	int deleteUsingDml(String url, String instanceId, String databaseId, String query) {
-		DatabaseClient dbClient
-		long rowCount = -1
-		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
-			dbClient.readWriteTransaction().run(
-					new TransactionCallable<Void>() {
-						@Override
-						public Void run(TransactionContext transaction) throws Exception {
-							//String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'"
-							rowCount = transaction.executeUpdate(Statement.of(query))
-							log.info("Record deleted : {}", rowCount)
-							return null
-						}
-					})
-		} catch(e) {
-			log.error("Unexpected Error : {}",e.message)
-			throw e
-		} finally {
-			spanner?.close()
-		}
-		return rowCount
-	}
 
 	// [START spanner_query_data]
 	List<Map> query(String url, String instanceId, String databaseId, String query) {
@@ -289,5 +253,57 @@ class TableDataService {
 				break;
 		}
 		return returnObject
+	}
+
+	/**
+	 *  ALl Delete Related Query
+	 */
+
+	// [START spanner_delete_data]
+	boolean truncateTable(String url, String instanceId, String databaseId, String tableName) {
+		DatabaseClient dbClient
+		boolean isSuccess
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			def mutations = new ArrayList<>()
+			if (tableName) {
+				mutations.add(Mutation.delete(tableName, KeySet.all()))
+				dbClient.write(mutations)
+				isSuccess = true
+				log.info("Records deleted.\n")
+			}
+		} catch(e) {
+			isSuccess = false
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner?.close()
+		}
+		return isSuccess
+	}
+
+	// [START spanner_dml_standard_delete]
+	int deleteUsingDml(String url, String instanceId, String databaseId, String query) {
+		DatabaseClient dbClient
+		long rowCount = -1
+		try {
+			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			dbClient.readWriteTransaction().run(
+					new TransactionCallable<Void>() {
+						@Override
+						public Void run(TransactionContext transaction) throws Exception {
+							//String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'"
+							rowCount = transaction.executeUpdate(Statement.of(query))
+							log.info("Record deleted : {}", rowCount)
+							return null
+						}
+					})
+		} catch(e) {
+			log.error("Unexpected Error : {}",e.message)
+			throw e
+		} finally {
+			spanner?.close()
+		}
+		return rowCount
 	}
 }

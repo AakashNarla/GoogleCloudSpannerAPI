@@ -19,12 +19,15 @@ import com.google.spanner.admin.instance.v1.CreateInstanceMetadata
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata
 import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.util.LoadCredentialsAPI
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import io.grpc.StatusRuntimeException
 
 import java.util.List
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
@@ -89,8 +92,10 @@ public class InstanceAdminService {
 
 	/** Create an instance. */
 	public String createInstance(final String url,
-			final String instanceId, final String configId, final String clientProject, final int node) {
-
+			final String instanceId, final String configId, final int node) {
+		InputStream ins = loadCredentialsAPI.getInputStreamURL(url)
+		def json = new JsonSlurper().parse(ins)
+		final String clientProject = json?.project_id
 		if(instanceId && configId && clientProject && node ) {
 			try {
 				OperationFuture<Instance, CreateInstanceMetadata> op =
@@ -101,7 +106,7 @@ public class InstanceAdminService {
 						.setNodeCount(node)
 						.build())
 
-				Instance v = op.get()
+				Instance v = op.get(1 , TimeUnit.MINUTES)
 				return "Succesfully Created Instance Id : "+ v.getDisplayName()
 			} catch (ExecutionException e) {
 				throw (SpannerException) e.getCause()
@@ -172,30 +177,48 @@ public class InstanceAdminService {
 	}
 
 	/** Update an instance. */
-	public void updateInstance(final String url,
-			Instance instance,
-			final String clientProject,
-			final String instanceId,
-			final String newDisplayName) {
+	String updateInstance(final String url,	final String instanceId, final String newDisplayName, final int nodeCount) {
+		InputStream ins = loadCredentialsAPI.getInputStreamURL(url)
+		def json = new JsonSlurper().parse(ins)
+		String clientProject = json?.project_id
+		String finalResult
+		Instance oldInstance = getInstance(url, instanceId)
+		if(oldInstance) {
+			InstanceInfo toUpdate =
+					InstanceInfo.newBuilder(InstanceId.of(clientProject, instanceId))
+					.setDisplayName(newDisplayName)
+					.setNodeCount(nodeCount)
+					.build()
+			OperationFuture<Instance, UpdateInstanceMetadata> op
+			if(!oldInstance.getDisplayName().equals(newDisplayName) && !oldInstance.getNodeCount().equals(nodeCount)) {
+				op = getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.DISPLAY_NAME, InstanceInfo.InstanceField.NODE_COUNT)
+			} else if(!oldInstance.getDisplayName().equals(newDisplayName)) {
+				op = getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.DISPLAY_NAME)
+			} else if(!oldInstance.getNodeCount().equals(nodeCount)) {
+				op = getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.NODE_COUNT)
+			} else {
+				return "Update Not Required"
+			}
 
-
-		InstanceInfo toUpdate =
-				InstanceInfo.newBuilder(InstanceId.of(clientProject, instanceId))
-				.setDisplayName(newDisplayName)
-				.setNodeCount(instance.getNodeCount() + 1)
-				.build()
-		// Only update display name
-		OperationFuture<Instance, UpdateInstanceMetadata> op =
-				getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.DISPLAY_NAME)
-		try {
-			op.get()
-		} catch (ExecutionException e) {
-			throw (SpannerException) e.getCause()
-		} catch (InterruptedException e) {
-			throw SpannerExceptionFactory.propagateInterrupt(e)
-		} finally {
-			spanner?.close()
+			try {
+				Instance v = op.get(1 , TimeUnit.MINUTES)
+				finalResult = "Succesfully Updated Instance : "+ v.getDisplayName()
+			} catch (ExecutionException e) {
+				throw (SpannerException) e.getCause()
+			} catch (InterruptedException e) {
+				throw SpannerExceptionFactory.propagateInterrupt(e)
+			} finally {
+				spanner?.close()
+			}
+		} else {
+			return new ResourceNotFoundException("Instance Not Found", HttpStatus.NOT_FOUND, "Instance Not found for Config id : "+instanceId )
 		}
 
+		return finalResult
+	}
+
+	InstanceInfo.InstanceField[] getInstanceField(Instance oldInstance) {
+		InstanceInfo.InstanceField
+		return InstanceInfo.InstanceField.DISPLAY_NAME
 	}
 }
