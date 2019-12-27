@@ -37,6 +37,13 @@ public class ExceptionControllerAdvice {
 		return new ErrorObject(message: e?.getErrorCode(), status: 500, detail: e?.message)
 	}
 
+	@ExceptionHandler(UnknownException)
+	@ResponseStatus(code= HttpStatus.INTERNAL_SERVER_ERROR)
+	public ErrorObject unknowExceptionError(final UnknownException e) {
+		log.error("SpannerException Caught Exception : {}, error code : {}",e, e?.getErrorCode())
+		return new ErrorObject(message: e?.message, status: e?.httpStatusCode, detail: e?.detailedMessage)
+	}
+
 	@ExceptionHandler(IllegalArgumentException)
 	public ErrorObject assertionException(final IllegalArgumentException e) {
 		return new ErrorObject(e, HttpStatus.NOT_FOUND, e.getLocalizedMessage())

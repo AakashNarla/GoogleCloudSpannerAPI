@@ -25,6 +25,8 @@ import com.google.cloud.spanner.InstanceAdminClient
 import com.google.cloud.spanner.Spanner
 import com.google.cloud.spanner.SpannerOptions
 import com.google.spanner.exception.ResourceNotFoundException
+import com.google.spanner.exception.UnknownException
+
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
@@ -47,8 +49,6 @@ class LoadCredentialsAPI {
 
 	GoogleCredentials createGoogleCredentials(String url) {
 		InputStream inp = getInputStreamURL(url)
-		//JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance()
-		//HttpTransportFactory httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 		return GoogleCredentials.fromStream(inp)
 	}
 
@@ -63,12 +63,9 @@ class LoadCredentialsAPI {
 		} catch(IOException e) {
 			throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), e?.message, e)
 		} catch(Exception e) {
-			throw e
+			throw new UnknownException("Unknown Error", HttpStatus.INTERNAL_SERVER_ERROR.value(), e?.message, e)
 		}
 
 		return spanner
 	}
-
-
-	
 }

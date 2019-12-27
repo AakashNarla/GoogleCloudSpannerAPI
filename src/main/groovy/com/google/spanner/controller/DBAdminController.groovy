@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import io.swagger.annotations.*;
 
 import com.google.spanner.service.TableDataService
+import com.google.spanner.object.ResponseWrapper
 import com.google.spanner.service.DatabaseAdminService
 import groovy.util.logging.Slf4j
 import io.swagger.annotations.Api
@@ -74,7 +75,7 @@ class DBAdminController {
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@PathVariable(name = "database-name", required = true)String database){
 		def result = dbAdminService.dropDatabase(url, instanceId, database)
-		return ResponseEntity.ok().body(result)
+		return ResponseEntity.ok().body(new ResponseWrapper(result: result))
 	}
 
 	@ApiOperation(value = "Returns state of a database")

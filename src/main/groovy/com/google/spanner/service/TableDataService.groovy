@@ -60,12 +60,11 @@ class TableDataService {
 		return dbClient
 	}
 
-	/** Example of unprotected blind write. */
+	/** unprotected blind write. */
 	String writeAtLeastOnce(String url,String instanceId, String databaseId,String table, List<Map> insertDataList) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		try {
-			def mutations = new ArrayList<>()
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
+			def mutations = new ArrayList<>()			
 			TableDataBuilder tdBuilder = new TableDataBuilder()
 			mutations = tdBuilder.createMutationist(table, insertDataList)
 
@@ -84,11 +83,9 @@ class TableDataService {
 	}
 
 	int insertorUpdateUsingDml(String url,String instanceId, String databaseId, String query) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		long rowCount = -1
 		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
-
 			dbClient.readWriteTransaction().run(
 					new TransactionCallable<Void>() {
 						@Override
@@ -109,12 +106,11 @@ class TableDataService {
 
 
 
-	/** Example of single use with timestamp bound. */
+	/** single use with timestamp bound. */
 	public String singleUseStale(String url,String instanceId, String databaseId, String table, long singerId) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		String firstName
-		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
+		try {			
 			String column = "FirstName"
 			Struct row = dbClient.singleUse(TimestampBound.ofMaxStaleness(10, TimeUnit.SECONDS))
 					.readRow(table, Key.of(singerId), Collections.singleton(column))
@@ -127,7 +123,9 @@ class TableDataService {
 		return firstName
 	}
 
-	/** Example of single use with timestamp bound. */
+	/** 
+	 * Single use with timestamp bound. 
+	 */
 	List<Map> selectSemiQuery(String url,String instanceId, String databaseId, String table, String whereCondition, Set<String> fields) {
 		DatabaseClient dbClient
 		List<Map> finalList = new ArrayList()
@@ -161,10 +159,9 @@ class TableDataService {
 
 	// [START spanner_delete_data]
 	boolean deleteData(String url, String instanceId, String databaseId, String tableName, List<String> pKeyList) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		boolean isSuccess
 		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			def mutations = new ArrayList<>()
 			if(pKeyList && pKeyList.size() > 0) {
 
@@ -191,11 +188,9 @@ class TableDataService {
 
 	// [START spanner_query_data]
 	List<Map> query(String url, String instanceId, String databaseId, String query) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		List<Map> finalList = new ArrayList()
-
 		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			ResultSet resultSet = dbClient
 					.singleUse() // Execute a single read or query against Cloud Spanner.
 					.executeQuery(Statement.of(query))
@@ -275,10 +270,10 @@ class TableDataService {
 
 	// [START spanner_delete_data]
 	boolean truncateTable(String url, String instanceId, String databaseId, String tableName) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		boolean isSuccess
 		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
+
 			def mutations = new ArrayList<>()
 			if (tableName) {
 				mutations.add(Mutation.delete(tableName, KeySet.all()))
@@ -298,10 +293,9 @@ class TableDataService {
 
 	// [START spanner_dml_standard_delete]
 	int deleteUsingDml(String url, String instanceId, String databaseId, String query) {
-		DatabaseClient dbClient
+		DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
 		long rowCount = -1
 		try {
-			dbClient = getDatabaseClient(url, instanceId, databaseId)
 			dbClient.readWriteTransaction().run(
 					new TransactionCallable<Void>() {
 						@Override

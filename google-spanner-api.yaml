@@ -15,6 +15,8 @@ tags:
     description: Spanner Instance API
   - name: Table
     description: Spanner Table Data API
+  - name: Table Query
+    description: Spanner Table Data Using Query API
 paths:
   /v1/spanner/instance/:
     post:
@@ -427,7 +429,7 @@ paths:
   '/v1/spanner/{instance-id}/{database}/query/delete':
     delete:
       tags:
-        - Table
+        - Table Query
       summary: Delete the data using query
       operationId: dropDatabaseUsingDELETE_1
       produces:
@@ -470,7 +472,7 @@ paths:
   '/v1/spanner/{instance-id}/{database}/query/get':
     post:
       tags:
-        - Table
+        - Table Query
       summary: Get data using Query
       operationId: getTableQueryUsingPOST
       consumes:
@@ -515,7 +517,7 @@ paths:
   '/v1/spanner/{instance-id}/{database}/query/insert':
     post:
       tags:
-        - Table
+        - Table Query
       summary: Insert the Data using query
       operationId: insertTableDataQueryUsingPOST
       consumes:
@@ -557,55 +559,10 @@ paths:
         '404':
           description: The resource you were trying to reach is not found
       deprecated: false
-  '/v1/spanner/{instance-id}/{database}/query/update':
+  '/v1/spanner/{instance-id}/{database}/query/table':
     post:
       tags:
-        - Table
-      summary: Update the Data using query
-      operationId: updateTableDataUsingQueryUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - '*/*'
-      parameters:
-        - name: database
-          in: path
-          description: database
-          required: true
-          type: string
-        - name: instance-id
-          in: path
-          description: instance-id
-          required: true
-          type: string
-        - name: query
-          in: query
-          description: query
-          required: true
-          type: string
-        - name: url
-          in: query
-          description: url
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Successfully Retrieve database state
-          schema:
-            type: object
-        '201':
-          description: Created
-        '401':
-          description: You are not authorized to view the resource
-        '403':
-          description: Accessing the resource you were trying to reach is forbidden
-        '404':
-          description: The resource you were trying to reach is not found
-      deprecated: false
-  '/v1/spanner/{instance-id}/{database}/table':
-    post:
-      tags:
-        - Table
+        - Table Query
       summary: Create/Alter/Drop a table in a database
       operationId: alterDatabaseTableUsingPOST
       consumes:
@@ -637,6 +594,51 @@ paths:
       responses:
         '200':
           description: Successfully Create/Alter/Drop table
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: You are not authorized to view the resource
+        '403':
+          description: Accessing the resource you were trying to reach is forbidden
+        '404':
+          description: The resource you were trying to reach is not found
+      deprecated: false
+  '/v1/spanner/{instance-id}/{database}/query/update':
+    post:
+      tags:
+        - Table Query
+      summary: Update the Data using query
+      operationId: updateTableDataUsingQueryUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: database
+          in: path
+          description: database
+          required: true
+          type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          type: string
+        - name: query
+          in: query
+          description: query
+          required: true
+          type: string
+        - name: url
+          in: query
+          description: url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully Retrieve database state
           schema:
             type: object
         '201':
@@ -810,7 +812,7 @@ paths:
       consumes:
         - application/json
       produces:
-        - '*/*'
+        - application/json
       parameters:
         - name: database
           in: path

@@ -13,6 +13,7 @@ import io.swagger.annotations.*;
 
 import com.google.cloud.spanner.Instance
 import com.google.cloud.spanner.InstanceConfig
+import com.google.spanner.object.ResponseWrapper
 import com.google.spanner.service.InstanceAdminService
 
 import groovy.json.JsonOutput
@@ -72,7 +73,7 @@ class InstanceAdminController {
 			@RequestParam(name = "config-id", required = true)String configId,
 			@RequestParam(name = "node-count", required = true)int nodeCount ){
 		String result = spannerService.createInstance(url, instanceId, configId, nodeCount)
-		return ResponseEntity.ok().body(result)
+		return ResponseEntity.ok().body(new ResponseWrapper(result: result))
 	}
 
 	@ApiOperation(value = "Update an existing Spanner instance display name and node count")
@@ -90,7 +91,7 @@ class InstanceAdminController {
 			@RequestParam(name = "newDisplayName", required = true)String newDisplayName,
 			@RequestParam(name = "node-count", required = true)int nodeCount ){
 		String result = spannerService.updateInstance(url, instanceId, newDisplayName, nodeCount)
-		return ResponseEntity.ok().body(result)
+		return ResponseEntity.ok().body(new ResponseWrapper(result: result))
 	}
 
 	@ApiOperation(value = "Return Spanner instance state")
@@ -136,6 +137,6 @@ class InstanceAdminController {
 			@PathVariable(name = "instance-id", required = true)String instanceId,
 			@RequestParam(name = "url", required = true)String url){
 		String result = spannerService.deleteInstance(url, instanceId)
-		return ResponseEntity.ok().body(result)
+		return ResponseEntity.ok().body(new ResponseWrapper(result: result))
 	}
 }
