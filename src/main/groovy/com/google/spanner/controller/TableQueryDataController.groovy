@@ -1,17 +1,14 @@
 package com.google.spanner.controller
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import io.swagger.annotations.*;
+import io.swagger.annotations.*
 
 import com.google.spanner.service.TableDataService
 import com.google.spanner.object.ResponseWrapper
@@ -24,100 +21,100 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class TableQueryDataController {
 
-	@Autowired
-	TableDataService tableDataService
+    @Autowired
+    TableDataService tableDataService
 
-	@Autowired
-	DatabaseAdminService dbAdminService
+    @Autowired
+    DatabaseAdminService dbAdminService
 
-	@ApiOperation(value = "Create/Alter/Drop a table in a database")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully Create/Alter/Drop table"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@PostMapping("/table")
-	ResponseEntity<?> alterDatabaseTable(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database", required = true)String database,
-			@ApiParam(name = "query",value="'CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)' OR 'ALTER TABLE Albums ADD COLUMN XXX INT64'")
-			@RequestParam(name = "query", required = true)String query){
-		def result = dbAdminService.updateTable(url, instanceId, database, query)
-		return ResponseEntity.ok().body(new ResponseWrapper(result: result))
-	}
+    @ApiOperation(value = "Create/Alter/Drop a table in a database")
+    @ApiResponses(value = [
+            @ApiResponse(code = 200, message = "Successfully Create/Alter/Drop table"),
+            @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+            @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+    ]
+    )
+    @PostMapping("/table")
+    ResponseEntity<?> alterDatabaseTable(
+            @RequestParam(name = "url", required = true) String url,
+            @PathVariable(name = "instance-id", required = true) String instanceId,
+            @PathVariable(name = "database", required = true) String database,
+            @ApiParam(name = "query", value = "'CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)' OR 'ALTER TABLE Albums ADD COLUMN XXX INT64'")
+            @RequestParam(name = "query", required = true) String query) {
+        def result = dbAdminService.updateTable(url, instanceId, database, query)
+        return ResponseEntity.ok().body(new ResponseWrapper(result: result))
+    }
 
-	@ApiOperation(value = "Get data using Query")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully Retrieve database state"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@PostMapping("/get")
-	ResponseEntity<?>  getTableQuery(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database", required = true)String database,
-			@RequestParam(name = "query", required = true)String query){
-		def result = tableDataService.query(url, instanceId, database, query)
-		return ResponseEntity.ok().body(new ResponseWrapper(result: result))
-	}
+    @ApiOperation(value = "Get data using Query")
+    @ApiResponses(value = [
+            @ApiResponse(code = 200, message = "Successfully Retrieve database state"),
+            @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+            @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+    ]
+    )
+    @PostMapping("/get")
+    ResponseEntity<?> getTableQuery(
+            @RequestParam(name = "url", required = true) String url,
+            @PathVariable(name = "instance-id", required = true) String instanceId,
+            @PathVariable(name = "database", required = true) String database,
+            @RequestParam(name = "query", required = true) String query) {
+        def result = tableDataService.query(url, instanceId, database, query)
+        return ResponseEntity.ok().body(new ResponseWrapper(result: result))
+    }
 
-	@ApiOperation(value = "Insert the Data using query")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully Retrieve database state"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@PostMapping("/insert")
-	ResponseEntity<?>  insertTableDataQuery(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database", required = true)String database,
-			@RequestParam(name = "query", required = true)String query){
-		def result = tableDataService.insertorUpdateUsingDml(url, instanceId, database, query)
-		return ResponseEntity.ok().body(new ResponseWrapper(message: 'Succesfully Inserted Data' ,result: result))
-	}
+    @ApiOperation(value = "Insert the Data using query")
+    @ApiResponses(value = [
+            @ApiResponse(code = 200, message = "Successfully Retrieve database state"),
+            @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+            @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+    ]
+    )
+    @PostMapping("/insert")
+    ResponseEntity<?> insertTableDataQuery(
+            @RequestParam(name = "url", required = true) String url,
+            @PathVariable(name = "instance-id", required = true) String instanceId,
+            @PathVariable(name = "database", required = true) String database,
+            @RequestParam(name = "query", required = true) String query) {
+        def result = tableDataService.upsertUsingDml(url, instanceId, database, query)
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data', result: result))
+    }
 
-	@ApiOperation(value = "Update the Data using query")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully Retrieve database state"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@PostMapping("/update")
-	ResponseEntity<?>  updateTableDataUsingQuery(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database", required = true)String database,
-			@RequestParam(name = "query", required = true)String query){
-		def result = tableDataService.insertorUpdateUsingDml(url, instanceId, database, query)
-		return ResponseEntity.ok().body(new ResponseWrapper(message: 'Succesfully Updated Data' ,result: result))
-	}
+    @ApiOperation(value = "Update the Data using query")
+    @ApiResponses(value = [
+            @ApiResponse(code = 200, message = "Successfully Retrieve database state"),
+            @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+            @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+    ]
+    )
+    @PostMapping("/update")
+    ResponseEntity<?> updateTableDataUsingQuery(
+            @RequestParam(name = "url", required = true) String url,
+            @PathVariable(name = "instance-id", required = true) String instanceId,
+            @PathVariable(name = "database", required = true) String database,
+            @RequestParam(name = "query", required = true) String query) {
+        def result = tableDataService.upsertUsingDml(url, instanceId, database, query)
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Updated Data', result: result))
+    }
 
-	@ApiOperation(value = "Delete the data using query")
-	@ApiResponses(value = [
-		@ApiResponse(code = 200, message = "Successfully deleted reocords count"),
-		@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-		@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-		@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	]
-	)
-	@DeleteMapping("/delete")
-	ResponseEntity<?>  dropDatabase(
-			@RequestParam(name = "url", required = true)String url,
-			@PathVariable(name = "instance-id", required = true)String instanceId,
-			@PathVariable(name = "database", required = true)String database,
-			@RequestParam(name = "query", required = true)String query){
-		def result = tableDataService.deleteUsingDml(url, instanceId, database, query)
-		return ResponseEntity.ok().body(new ResponseWrapper(message: 'Succesfully Inserted Data' ,result: result))
-	}
+    @ApiOperation(value = "Delete the data using query")
+    @ApiResponses(value = [
+            @ApiResponse(code = 200, message = "Successfully deleted records count"),
+            @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+            @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+    ]
+    )
+    @DeleteMapping("/delete")
+    ResponseEntity<?> dropDatabase(
+            @RequestParam(name = "url", required = true) String url,
+            @PathVariable(name = "instance-id", required = true) String instanceId,
+            @PathVariable(name = "database", required = true) String database,
+            @RequestParam(name = "query", required = true) String query) {
+        def result = tableDataService.deleteUsingDml(url, instanceId, database, query)
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data', result: result))
+    }
 }

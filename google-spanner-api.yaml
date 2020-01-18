@@ -38,7 +38,9 @@ paths:
         '200':
           description: Successfully Get All Instance Config
           schema:
-            type: string
+            type: array
+            items:
+              $ref: '#/definitions/Instance'
         '201':
           description: Created
         '401':
@@ -68,7 +70,9 @@ paths:
         '200':
           description: Successfully Get All Instance Config
           schema:
-            type: string
+            type: array
+            items:
+              $ref: '#/definitions/InstanceConfig'
         '201':
           description: Created
         '401':
@@ -114,7 +118,7 @@ paths:
         '200':
           description: Successfully created a new instance
           schema:
-            type: string
+            $ref: '#/definitions/ResponseWrapper'
         '201':
           description: Created
         '401':
@@ -160,7 +164,7 @@ paths:
         '200':
           description: Successfully updated instance
           schema:
-            type: string
+            $ref: '#/definitions/ResponseWrapper'
         '201':
           description: Created
         '401':
@@ -263,7 +267,7 @@ paths:
         '200':
           description: Successfully Deleted
           schema:
-            type: string
+            $ref: '#/definitions/ResponseWrapper'
         '204':
           description: No Content
         '401':
@@ -457,7 +461,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully deleted reocords count
+          description: Successfully deleted records count
           schema:
             type: object
         '204':
@@ -705,7 +709,7 @@ paths:
     delete:
       tags:
         - Table
-      summary: Trucate a Table
+      summary: Truncate a Table
       operationId: truncateTableUsingDELETE
       produces:
         - '*/*'
@@ -748,7 +752,7 @@ paths:
     post:
       tags:
         - Table
-      summary: Returns the Data with coloumn name
+      summary: Returns the Data with column name
       operationId: getTableDataUsingPOST
       consumes:
         - application/json
@@ -831,7 +835,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Map�string,string�'
+              $ref: '#/definitions/MapÂ«string,stringÂ»'
         - name: table
           in: path
           description: table
@@ -857,8 +861,95 @@ paths:
           description: The resource you were trying to reach is not found
       deprecated: false
 definitions:
-  'Map�string,string�':
+  Identity:
     type: object
-    title: 'Map�string,string�'
+    properties:
+      type:
+        $ref: '#/definitions/Type'
+      value:
+        type: string
+    title: Identity
+  Instance:
+    type: object
+    properties:
+      displayName:
+        type: string
+      iampolicy:
+        $ref: '#/definitions/Policy'
+      id:
+        $ref: '#/definitions/InstanceId'
+      instanceConfigId:
+        $ref: '#/definitions/InstanceConfigId'
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+      nodeCount:
+        type: integer
+        format: int32
+      state:
+        type: string
+        enum:
+          - UNSPECIFIED
+          - CREATING
+          - READY
+    title: Instance
+  InstanceConfig:
+    type: object
+    properties:
+      displayName:
+        type: string
+      id:
+        $ref: '#/definitions/InstanceConfigId'
+    title: InstanceConfig
+  InstanceConfigId:
+    type: object
+    properties:
+      instanceConfig:
+        type: string
+      name:
+        type: string
+      project:
+        type: string
+    title: InstanceConfigId
+  InstanceId:
+    type: object
+    properties:
+      instance:
+        type: string
+      name:
+        type: string
+      project:
+        type: string
+    title: InstanceId
+  'MapÂ«string,stringÂ»':
+    type: object
+    title: 'MapÂ«string,stringÂ»'
     additionalProperties:
       type: string
+  Policy:
+    type: object
+    properties:
+      bindings:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/definitions/Identity'
+      etag:
+        type: string
+      version:
+        type: integer
+        format: int32
+    title: Policy
+  ResponseWrapper:
+    type: object
+    properties:
+      message:
+        type: string
+      result:
+        type: object
+    title: ResponseWrapper
+  Type:
+    type: object
+    title: Type

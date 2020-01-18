@@ -1,8 +1,8 @@
 plugins {
-	id 'org.springframework.boot' version '2.2.2.RELEASE'
-	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-	id 'groovy'
-	id 'codenarc'
+    id 'org.springframework.boot' version '2.2.2.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'groovy'
+    id 'codenarc'
 }
 
 group = 'com.spring'
@@ -10,41 +10,43 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 bootJar {
-	archiveVersion = '1.0.0'
-	archiveFileName = 'googleDB.jar'
+    archiveVersion = '1.0.0'
+    archiveFileName = 'googleDB.jar'
 }
 
 dependencies {
-	
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	
-	implementation 'com.google.cloud:google-cloud-storage:1.102.0'
-	implementation 'com.google.cloud:google-cloud-spanner:1.47.0'
-	implementation 'org.codehaus.groovy:groovy'
-	implementation 'org.codehaus.groovy:groovy-json:2.5.8'
-	//implementation 'org.codehaus.groovy:groovy-all:2.5.8'
-	//implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.5.8'
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
-	
-	//Swagger
-	implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
-	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'com.google.cloud:google-cloud-storage:1.102.0'
+    implementation 'com.google.cloud:google-cloud-spanner:1.47.0'
+    implementation 'org.codehaus.groovy:groovy'
+    implementation 'org.codehaus.groovy:groovy-json:2.5.8'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+
+    //Swagger
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+
+    implementation 'org.springframework.retry:spring-retry:1.2.5.RELEASE'
+    implementation 'org.springframework:spring-aspects'
+
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 codenarc {
-    toolVersion = '1.4' 
-    configFile = file("${rootProject.projectDir}/config/codenarc/rules.groovy") 
-    reportFormat = 'html' 
-    ignoreFailures = true 
+    toolVersion = '1.4'
+    configFile = file("${rootProject.projectDir}/config/codenarc/rules.groovy")
+    reportFormat = 'html'
+    ignoreFailures = true
 }

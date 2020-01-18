@@ -8,11 +8,11 @@ import org.springframework.web.servlet.view.RedirectView
 @RequestMapping("/")
 class RestController {
 
-	@RequestMapping(method = RequestMethod.GET)
-	public RedirectView redirectBaseUrl() {
-		return new RedirectView("/swagger-ui.html", true, false)
-	}
-	
-	
+    @RequestMapping(method = RequestMethod.GET)
+     RedirectView redirectBaseUrl() {
+        return new RedirectView("/swagger-ui.html", true, false)
+    }
+
+
 }
 

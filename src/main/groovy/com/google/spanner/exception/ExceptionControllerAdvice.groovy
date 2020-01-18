@@ -21,31 +21,31 @@ import io.grpc.Status
 @RestControllerAdvice
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ExceptionControllerAdvice {
+ class ExceptionControllerAdvice {
 
-	@ExceptionHandler(ResourceNotFoundException)
-	@ResponseStatus(code= HttpStatus.NOT_FOUND)
-	public ErrorObject resourceNotFoundException(final ResourceNotFoundException e) {
-		log.error("Global Error Caught Exception : {}", e)
-		return new ErrorObject(message: e?.message, status: e?.httpStatusCode, detail: e?.detailedMessage)
-	}
+    @ExceptionHandler(ResourceNotFoundException)
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+     ErrorObject resourceNotFoundException(final ResourceNotFoundException e) {
+        log.error("Global Error Caught Exception : {}", e)
+        return new ErrorObject(message: e?.message, status: e?.httpStatusCode, detail: e?.detailedMessage)
+    }
 
-	@ExceptionHandler(SpannerException)
-	@ResponseStatus(code= HttpStatus.INTERNAL_SERVER_ERROR)
-	public ErrorObject internalServerError(final SpannerException e) {
-		log.error("SpannerException Caught Exception : {}, error code : {}",e, e?.getErrorCode())
-		return new ErrorObject(message: e?.getErrorCode(), status: 500, detail: e?.message)
-	}
+    @ExceptionHandler(SpannerException)
+    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+     ErrorObject internalServerError(final SpannerException e) {
+        log.error("SpannerException Caught Exception : {}, error code : {}", e, e?.getErrorCode())
+        return new ErrorObject(message: e?.getErrorCode(), status: 500, detail: e?.message)
+    }
 
-	@ExceptionHandler(UnknownException)
-	@ResponseStatus(code= HttpStatus.INTERNAL_SERVER_ERROR)
-	public ErrorObject unknowExceptionError(final UnknownException e) {
-		log.error("SpannerException Caught Exception : {}, error code : {}",e, e?.getErrorCode())
-		return new ErrorObject(message: e?.message, status: e?.httpStatusCode, detail: e?.detailedMessage)
-	}
+    @ExceptionHandler(UnknownException)
+    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+     ErrorObject unknownExceptionError(final UnknownException e) {
+        //log.error("UnknownException Caught Exception : {}, error code : {}", e, e?.getErrorCode())
+        return new ErrorObject(message: e?.message, status: e?.httpStatusCode, detail: e?.detailedMessage)
+    }
 
-	@ExceptionHandler(IllegalArgumentException)
-	public ErrorObject assertionException(final IllegalArgumentException e) {
-		return new ErrorObject(e, HttpStatus.NOT_FOUND, e.getLocalizedMessage())
-	}
+    @ExceptionHandler(IllegalArgumentException)
+     ErrorObject assertionException(final IllegalArgumentException e) {
+        return new ErrorObject(e?.message, HttpStatus.NOT_FOUND.value(), e.getLocalizedMessage())
+    }
 }

@@ -4,7 +4,7 @@ import groovy.transform.Canonical
 
 @Canonical
 class ErrorObject {
-	String message
-	int status
-	String detail
+    String message
+    int status
+    String detail
 }
