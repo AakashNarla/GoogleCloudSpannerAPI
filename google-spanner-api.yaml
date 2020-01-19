@@ -38,7 +38,7 @@ paths:
         '200':
           description: Successfully Get All Instance Config
           schema:
-            type: string
+            type: object
         '201':
           description: Created
         '401':
@@ -195,9 +195,9 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully instance state
+          description: Instance Config Details
           schema:
-            type: string
+            type: object
         '201':
           description: Created
         '401':
@@ -230,9 +230,9 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully instance state
+          description: Successfully Return instance state
           schema:
-            type: string
+            type: object
         '201':
           description: Created
         '401':
@@ -263,7 +263,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Deleted
+          description: Successfully Deleted Spanner Instance
           schema:
             $ref: '#/definitions/ResponseWrapper'
         '204':
@@ -376,7 +376,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Create a database
+          description: Successfully Drop a database
           schema:
             type: object
         '204':
@@ -504,7 +504,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Retrieve database state
+          description: Successfully Retrieve Data from Table
           schema:
             type: object
         '201':
@@ -549,7 +549,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Retrieve database state
+          description: Successfully Retrieve Table Insert Count
           schema:
             type: object
         '201':
@@ -640,7 +640,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Retrieve database state
+          description: Successfully Update the table
           schema:
             type: object
         '201':
@@ -691,7 +691,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully retrieved list
+          description: Successfully Delete the Data
           schema:
             type: object
         '204':
@@ -734,7 +734,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Create a database
+          description: Successfully Truncate a database
           schema:
             type: object
         '204':
@@ -846,7 +846,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully Retrieve database state
+          description: Successfully Insert the data into database
           schema:
             type: object
         '201':
@@ -888,5 +888,5 @@ definitions:
       message:
         type: string
       result:
-        type: object
+        type: string
     title: ResponseWrapper

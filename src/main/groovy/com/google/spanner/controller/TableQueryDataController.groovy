@@ -48,7 +48,7 @@ class TableQueryDataController {
 
     @ApiOperation(value = "Get data using Query")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully Retrieve database state"),
+            @ApiResponse(code = 200, message = "Successfully Retrieve Data from Table"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
@@ -66,7 +66,7 @@ class TableQueryDataController {
 
     @ApiOperation(value = "Insert the Data using query")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully Retrieve database state"),
+            @ApiResponse(code = 200, message = "Successfully Retrieve Table Insert Count"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
@@ -79,12 +79,12 @@ class TableQueryDataController {
             @PathVariable(name = "database", required = true) String database,
             @RequestParam(name = "query", required = true) String query) {
         def result = tableDataService.upsertUsingDml(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data', result: result))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data Count : '+ result, result: "Success"))
     }
 
     @ApiOperation(value = "Update the Data using query")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully Retrieve database state"),
+            @ApiResponse(code = 200, message = "Successfully Update the table"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
@@ -115,6 +115,6 @@ class TableQueryDataController {
             @PathVariable(name = "database", required = true) String database,
             @RequestParam(name = "query", required = true) String query) {
         def result = tableDataService.deleteUsingDml(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data', result: result))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Deleted Rows : '+result, result: "Success"))
     }
 }

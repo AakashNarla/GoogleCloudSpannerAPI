@@ -95,7 +95,7 @@ class TableDataService {
                     .append(joiner.join(fields))
                     .append(" FROM ")
                     .append(table)
-                    .append(whereCondition ? "where " + whereCondition : "")
+                    .append(whereCondition ? " where " + whereCondition : "")
                     .build()
             ResultSet resultSet = dbClient.singleUse(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES)).executeQuery(query)
             while (resultSet.next()) {

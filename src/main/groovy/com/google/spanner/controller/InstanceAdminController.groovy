@@ -46,7 +46,7 @@ class InstanceAdminController {
     ]
     )
     @PostMapping("/")
-    ResponseEntity<String> getAllInstance(@RequestParam(name = "url", required = true)String url){
+    ResponseEntity<?> getAllInstance(@RequestParam(name = "url", required = true)String url){
         List<Instance> result = spannerService.listInstances(url)
         return ResponseEntity.ok().body(new JsonBuilder(result).toPrettyString())
     }
@@ -90,14 +90,14 @@ class InstanceAdminController {
 
     @ApiOperation(value = "Return Spanner instance state")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully instance state"),
+            @ApiResponse(code = 200, message = "Successfully Return instance state"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
     ]
     )
     @PostMapping("/{instance-id}")
-    ResponseEntity<String> getInstanceState(@PathVariable(name = "instance-id", required = true) String instanceId,
+    ResponseEntity<?> getInstanceState(@PathVariable(name = "instance-id", required = true) String instanceId,
                                             @RequestParam(name = "url", required = true) String url) {
         Instance result = spannerService.getInstance(url, instanceId)
         return ResponseEntity.ok().body(new JsonBuilder(result).toPrettyString())
@@ -105,14 +105,14 @@ class InstanceAdminController {
 
     @ApiOperation(value = "Return Spanner instance Config")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully instance state"),
+            @ApiResponse(code = 200, message = "Instance Config Details"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
     ]
     )
     @PostMapping("/{instance-config}/config")
-    ResponseEntity<String> getInstanceConfig(@PathVariable(name = "instance-config", required = true) String instanceConfig,
+    ResponseEntity<?> getInstanceConfig(@PathVariable(name = "instance-config", required = true) String instanceConfig,
                                              @RequestParam(name = "url", required = true) String url) {
         def result = spannerService.getInstanceConfig(url, instanceConfig)
         return ResponseEntity.ok().body(new JsonBuilder(result).toPrettyString())
@@ -120,7 +120,7 @@ class InstanceAdminController {
 
     @ApiOperation(value = "Delete Spanner instance")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully Deleted"),
+            @ApiResponse(code = 200, message = "Successfully Deleted Spanner Instance"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")

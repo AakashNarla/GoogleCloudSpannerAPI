@@ -1,5 +1,6 @@
 package com.google.spanner.controller
 
+import groovy.json.JsonBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -40,7 +41,7 @@ class DBAdminController {
             @RequestParam(name = "url", required = true) String url,
             @PathVariable(name = "instance-id", required = true) String instanceId) {
         def result = dbAdminService.listDatabases(url, instanceId)
-        return ResponseEntity.ok().body(result)
+        return ResponseEntity.ok().body(new JsonBuilder(result).toPrettyString())
     }
 
 
@@ -58,12 +59,12 @@ class DBAdminController {
             @PathVariable(name = "instance-id", required = true) String instanceId,
             @PathVariable(name = "database-name", required = true) String database) {
         def result = dbAdminService.createDatabase(url, instanceId, database)
-        return ResponseEntity.ok().body(result)
+        return ResponseEntity.ok().body(new JsonBuilder(result).toPrettyString())
     }
 
     @ApiOperation(value = "Drop a Database")
     @ApiResponses(value = [
-            @ApiResponse(code = 200, message = "Successfully Create a database"),
+            @ApiResponse(code = 200, message = "Successfully Drop a database"),
             @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
@@ -92,6 +93,6 @@ class DBAdminController {
             @PathVariable(name = "instance-id", required = true) String instanceId,
             @PathVariable(name = "database", required = true) String database) {
         def result = dbAdminService.getDatabase(url, instanceId, database)
-        return ResponseEntity.ok().body(result)
+        return ResponseEntity.ok().body(new JsonBuilder(result).toPrettyString())
     }
 }
