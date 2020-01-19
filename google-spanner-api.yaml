@@ -38,9 +38,7 @@ paths:
         '200':
           description: Successfully Get All Instance Config
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Instance'
+            type: string
         '201':
           description: Created
         '401':
@@ -93,14 +91,14 @@ paths:
       produces:
         - '*/*'
       parameters:
-        - name: config-id
+        - name: instance-config
           in: query
-          description: config-id
+          description: instance-config
           required: true
           type: string
-        - name: instance-id
+        - name: instance-name
           in: query
-          description: instance-id
+          description: instance-name
           required: true
           type: string
         - name: node-count
@@ -139,14 +137,14 @@ paths:
       produces:
         - '*/*'
       parameters:
+        - name: display-name
+          in: query
+          description: display-name
+          required: true
+          type: string
         - name: instance-id
           in: query
           description: instance-id
-          required: true
-          type: string
-        - name: newDisplayName
-          in: query
-          description: newDisplayName
           required: true
           type: string
         - name: node-count
@@ -174,20 +172,20 @@ paths:
         '404':
           description: The resource you were trying to reach is not found
       deprecated: false
-  '/v1/spanner/instance/{instance-id}':
+  '/v1/spanner/instance/{instance-config}/config':
     post:
       tags:
         - Instance
-      summary: Return Spanner instance state
-      operationId: getInstanceStateUsingPOST
+      summary: Return Spanner instance Config
+      operationId: getInstanceConfigUsingPOST
       consumes:
         - application/json
       produces:
         - '*/*'
       parameters:
-        - name: instance-id
+        - name: instance-config
           in: path
-          description: instance-id
+          description: instance-config
           required: true
           type: string
         - name: url
@@ -209,12 +207,12 @@ paths:
         '404':
           description: The resource you were trying to reach is not found
       deprecated: false
-  '/v1/spanner/instance/{instance-id}/config':
+  '/v1/spanner/instance/{instance-id}':
     post:
       tags:
         - Instance
-      summary: Return Spanner instance Config
-      operationId: getInstanceConfigUsingPOST
+      summary: Return Spanner instance state
+      operationId: getInstanceStateUsingPOST
       consumes:
         - application/json
       produces:
@@ -861,39 +859,6 @@ paths:
           description: The resource you were trying to reach is not found
       deprecated: false
 definitions:
-  Identity:
-    type: object
-    properties:
-      type:
-        $ref: '#/definitions/Type'
-      value:
-        type: string
-    title: Identity
-  Instance:
-    type: object
-    properties:
-      displayName:
-        type: string
-      iampolicy:
-        $ref: '#/definitions/Policy'
-      id:
-        $ref: '#/definitions/InstanceId'
-      instanceConfigId:
-        $ref: '#/definitions/InstanceConfigId'
-      labels:
-        type: object
-        additionalProperties:
-          type: string
-      nodeCount:
-        type: integer
-        format: int32
-      state:
-        type: string
-        enum:
-          - UNSPECIFIED
-          - CREATING
-          - READY
-    title: Instance
   InstanceConfig:
     type: object
     properties:
@@ -912,36 +877,11 @@ definitions:
       project:
         type: string
     title: InstanceConfigId
-  InstanceId:
-    type: object
-    properties:
-      instance:
-        type: string
-      name:
-        type: string
-      project:
-        type: string
-    title: InstanceId
   'MapÂ«string,stringÂ»':
     type: object
     title: 'MapÂ«string,stringÂ»'
     additionalProperties:
       type: string
-  Policy:
-    type: object
-    properties:
-      bindings:
-        type: object
-        additionalProperties:
-          type: array
-          items:
-            $ref: '#/definitions/Identity'
-      etag:
-        type: string
-      version:
-        type: integer
-        format: int32
-    title: Policy
   ResponseWrapper:
     type: object
     properties:
@@ -950,6 +890,3 @@ definitions:
       result:
         type: object
     title: ResponseWrapper
-  Type:
-    type: object
-    title: Type

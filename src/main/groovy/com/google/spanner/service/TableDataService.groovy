@@ -45,7 +45,7 @@ class TableDataService {
             def mutations = TableDataBuilder.createMutationList(table, insertDataList)
 
             if (mutations && mutations.size() > 0) {
-                dbClient.write(mutations)
+                dbClient.write(mutations as Iterable<Mutation>)
                 return "Successfully Inserted data"
             } else {
                 return "Something went wrong while inserting data"
@@ -80,23 +80,6 @@ class TableDataService {
         return rowCount.intValue()
     }
 
-
-    /** single use with timestamp bound. */
-     String singleUseStale(String url, String instanceId, String databaseId, String table, long singerId) {
-        DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
-        String firstName = null
-        try {
-            String column = "FirstName"
-            Struct row = dbClient.singleUse(TimestampBound.ofMaxStaleness(10, TimeUnit.SECONDS))
-                    .readRow(table, Key.of(singerId), Collections.singleton(column))
-            firstName = row.getString(column)
-        } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
-        } finally {
-            spanner?.close()
-        }
-        return firstName
-    }
 
     /**
      * Single use with timestamp bound.
@@ -165,6 +148,7 @@ class TableDataService {
         DatabaseClient dbClient = getDatabaseClient(url, instanceId, databaseId)
         List<Map> finalList = new ArrayList()
         try {
+
             ResultSet resultSet = dbClient
                     .singleUse() // Execute a single read or query against Cloud Spanner.
                     .executeQuery(Statement.of(query))

@@ -37,6 +37,7 @@ dependencies {
 
     implementation 'org.springframework.retry:spring-retry:1.2.5.RELEASE'
     implementation 'org.springframework:spring-aspects'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
 
 }
 

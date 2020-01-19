@@ -141,7 +141,7 @@ import org.springframework.web.server.ResponseStatusException
 
     /** List All Instances. */
      List<Instance> listInstances(final String url) {
-        List<Instance> instances = null
+        def instances = null
         try {
             instances = Lists.newArrayList(getInstanceAdminClientCred(url).listInstances(Options.pageSize(1)).iterateAll())
         } catch (Exception e) {

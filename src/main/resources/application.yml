@@ -1,0 +1,9 @@
+spring:
+  main:
+    banner-mode: off
+  cache:
+    cache-names: spanner
+    caffeine:
+      spec: maximumSize=3000,expireAfterWrite=180s
+server:
+  port: 8080
