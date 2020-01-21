@@ -7,8 +7,6 @@ import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.exception.UnknownException
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import org.springframework.cache.annotation.CacheConfig
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.EnableRetry
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Component
 @Component
 @Slf4j
 @EnableRetry
-@CacheConfig(cacheNames = ["spanner"])
 class LoadCredentialsAPI {
 
     @Retryable(
@@ -44,13 +41,13 @@ class LoadCredentialsAPI {
         log.error("Entered Recover method: Failed maximum time to load the file {}", url)
         return null
     }
-    @Cacheable
+
     GoogleCredentials createGoogleCredentials(String url) {
         InputStream inp = getInputStreamURL(url)
         log.info("Loading Google Credentials from URL : {} ", url)
         return GoogleCredentials.fromStream(inp)
     }
-    @Cacheable
+
      String getProjectFromCredentials(String url){
         InputStream ins = getInputStreamURL(url)
         def json = new JsonSlurper().parse(ins)

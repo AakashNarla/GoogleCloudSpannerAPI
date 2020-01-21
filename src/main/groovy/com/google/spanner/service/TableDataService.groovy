@@ -103,8 +103,11 @@ class TableDataService {
             ResultSet resultSet = dbClient.singleUse(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES)).executeQuery(query)
             while (resultSet.next()) {
                 def outputMap = [:]
-                for (String field : fields) {
-                    outputMap.put(field, getObjectFromQuery(resultSet, 0, field))
+                int count = resultSet.getColumnCount()
+                Struct struct = resultSet.getCurrentRowAsStruct()
+                for (int i = 0 ; i < count; i++) {
+                    String columnName = struct.type.structFields.get(i).name
+                    outputMap.put(columnName, getObjectFromQuery(resultSet, i, columnName))
                 }
                 finalList.add(outputMap)
             }
