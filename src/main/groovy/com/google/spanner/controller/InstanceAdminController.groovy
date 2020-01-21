@@ -67,7 +67,7 @@ class InstanceAdminController {
             @RequestParam(name = "instance-config", required = true) String instanceConfig,
             @RequestParam(name = "node-count", required = true) int nodeCount) {
         String message = spannerService.createInstance(url, instanceName, instanceConfig, nodeCount)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: message, result: "Success"))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: message, status: "success"))
     }
 
     @ApiOperation(value = "Update an existing Spanner instance display name and node count")
@@ -85,7 +85,7 @@ class InstanceAdminController {
             @RequestParam(name = "display-name", required = true) String newDisplayName,
             @RequestParam(name = "node-count", required = true) int nodeCount) {
         String result = spannerService.updateInstance(url, instanceId, newDisplayName, nodeCount)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: result, result: "Success"))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: result, status: "success"))
     }
 
     @ApiOperation(value = "Return Spanner instance state")
@@ -131,6 +131,6 @@ class InstanceAdminController {
             @PathVariable(name = "instance-id", required = true) String instanceId,
             @RequestParam(name = "url", required = true) String url) {
         String result = spannerService.deleteInstance(url, instanceId)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: result, result: "Success"))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: result, status: "success"))
     }
 }

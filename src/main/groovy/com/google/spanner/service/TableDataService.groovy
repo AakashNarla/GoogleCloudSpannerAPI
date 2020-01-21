@@ -26,7 +26,7 @@ class TableDataService {
         DatabaseClient dbClient = null
         try {
             String project = loadCredentialsAPI.getProjectFromCredentials(url)
-            log.error("Project Id : {}", project)
+            log.debug("Project Id : {}", project)
             if (project && instance && database) {
                 spanner = loadCredentialsAPI.getSpanner(url)
                 DatabaseId db = DatabaseId.of(project, instance, database)
@@ -84,10 +84,13 @@ class TableDataService {
     /**
      * Single use with timestamp bound.
      */
-    List<Map> selectSemiQuery(String url, String instanceId, String databaseId, String table, String whereCondition, Set<String> fields) {
+    List<Map> selectSemiQuery(String url, String instanceId, String databaseId, String table, String whereCondition, String fieldString) {
         DatabaseClient dbClient
         List<Map> finalList = new ArrayList()
         try {
+            def fields = fieldString.tokenize(",")*.trim()
+            fields = fields.unique().collect { it.toSet().join() }
+
             dbClient = getDatabaseClient(url, instanceId, databaseId)
 
             Joiner joiner = Joiner.on(',')
@@ -112,6 +115,35 @@ class TableDataService {
             spanner?.close()
         }
         return finalList
+    }
+
+    /**
+     * Single use with timestamp bound.
+     */
+    double getSelectCount(String url, String instanceId, String databaseId, String table, String whereCondition) {
+        DatabaseClient dbClient
+        List<Map> finalList = new ArrayList()
+        long count = 0
+        try {
+            dbClient = getDatabaseClient(url, instanceId, databaseId)
+
+            Statement query = Statement.newBuilder("SELECT ")
+                    .append(" COUNT(*) AS rowcount ")
+                    .append(" FROM ")
+                    .append(table)
+                    .append(whereCondition ? " where " + whereCondition : "")
+                    .build()
+            ResultSet resultSet = dbClient.singleUse(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES)).executeQuery(query)
+            while (resultSet.next()) {
+                count = resultSet.getLong("rowcount")
+            }
+        } catch (e) {
+            log.error("Unexpected Error : {}", e.message)
+            throw e
+        } finally {
+            spanner?.close()
+        }
+        return count
     }
 
 
@@ -155,8 +187,10 @@ class TableDataService {
             while (resultSet.next()) {
                 def outputMap = [:]
                 int count = resultSet.getColumnCount()
+                Struct struct = resultSet.getCurrentRowAsStruct()
                 for (int i = 0 ; i < count; i++) {
-                    outputMap.put(i + 1, getObjectFromQuery(resultSet, i, null))
+                    String columnName = struct.type.structFields.get(i).name
+                    outputMap.put(columnName, getObjectFromQuery(resultSet, i, columnName))
                 }
                 finalList.add(outputMap)
 

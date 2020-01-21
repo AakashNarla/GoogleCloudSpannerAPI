@@ -43,7 +43,7 @@ class TableQueryDataController {
             @ApiParam(name = "query", value = "'CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)' OR 'ALTER TABLE Albums ADD COLUMN XXX INT64'")
             @RequestParam(name = "query", required = true) String query) {
         def result = dbAdminService.updateTable(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(result: result))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: result, status: 'success'))
     }
 
     @ApiOperation(value = "Get data using Query")
@@ -61,7 +61,7 @@ class TableQueryDataController {
             @PathVariable(name = "database", required = true) String database,
             @RequestParam(name = "query", required = true) String query) {
         def result = tableDataService.query(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(result: result))
+        return ResponseEntity.ok().body(result)
     }
 
     @ApiOperation(value = "Insert the Data using query")
@@ -79,7 +79,7 @@ class TableQueryDataController {
             @PathVariable(name = "database", required = true) String database,
             @RequestParam(name = "query", required = true) String query) {
         def result = tableDataService.upsertUsingDml(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data Count : '+ result, result: "Success"))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Inserted Data Count : '+ result, status: "success"))
     }
 
     @ApiOperation(value = "Update the Data using query")
@@ -97,7 +97,7 @@ class TableQueryDataController {
             @PathVariable(name = "database", required = true) String database,
             @RequestParam(name = "query", required = true) String query) {
         def result = tableDataService.upsertUsingDml(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Updated Data', result: result))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Updated Data Count : '+ result, status: 'success'))
     }
 
     @ApiOperation(value = "Delete the data using query")
@@ -115,6 +115,6 @@ class TableQueryDataController {
             @PathVariable(name = "database", required = true) String database,
             @RequestParam(name = "query", required = true) String query) {
         def result = tableDataService.deleteUsingDml(url, instanceId, database, query)
-        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Deleted Rows : '+result, result: "Success"))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: 'Successfully Deleted Rows : '+result, status: "success"))
     }
 }

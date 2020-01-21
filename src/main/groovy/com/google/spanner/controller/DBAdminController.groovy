@@ -76,7 +76,7 @@ class DBAdminController {
             @PathVariable(name = "instance-id", required = true) String instanceId,
             @PathVariable(name = "database-name", required = true) String database) {
         def result = dbAdminService.dropDatabase(url, instanceId, database)
-        return ResponseEntity.ok().body(new ResponseWrapper(result: result))
+        return ResponseEntity.ok().body(new ResponseWrapper(message: result, status:"success"))
     }
 
     @ApiOperation(value = "Returns state of a database")
