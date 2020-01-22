@@ -9,6 +9,13 @@ group = 'com.spring'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
+ext {
+    cucumber = [
+            version: '1.2.5'
+    ]
+}
+
+
 repositories {
     mavenCentral()
 }
@@ -37,6 +44,14 @@ dependencies {
 
     implementation 'org.springframework.retry:spring-retry:1.2.5.RELEASE'
     implementation 'org.springframework:spring-aspects'
+
+    //integration-test
+    implementation group: 'info.cukes', name: 'cucumber-core', version: cucumber.version
+    implementation group: 'info.cukes', name: 'cucumber-java', version: cucumber.version
+    implementation group: 'info.cukes', name: 'cucumber-junit', version: cucumber.version
+    implementation group: 'info.cukes', name: 'cucumber-spring', version: cucumber.version
+    implementation group: 'info.cukes', name: 'cucumber-groovy', version: cucumber.version
+
 }
 
 test {
