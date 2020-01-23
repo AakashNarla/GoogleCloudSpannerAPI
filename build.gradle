@@ -13,6 +13,10 @@ ext {
     cucumber = [
             version: '1.2.5'
     ]
+    commons = [
+            version: '1.3.2'
+    ]
+
 }
 
 
@@ -50,12 +54,17 @@ dependencies {
     implementation group: 'info.cukes', name: 'cucumber-java', version: cucumber.version
     implementation group: 'info.cukes', name: 'cucumber-junit', version: cucumber.version
     implementation group: 'info.cukes', name: 'cucumber-spring', version: cucumber.version
-    implementation group: 'info.cukes', name: 'cucumber-groovy', version: cucumber.version
-
+    //implementation group: 'info.cukes', name: 'cucumber-groovy', version: cucumber.version
+    implementation group: 'org.apache.commons', name: 'commons-io', version: commons.version
 }
 
-test {
+/*test {
     useJUnitPlatform()
+}*/
+
+test {
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
 }
 
 codenarc {

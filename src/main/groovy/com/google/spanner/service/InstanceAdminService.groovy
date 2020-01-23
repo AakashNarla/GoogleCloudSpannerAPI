@@ -1,43 +1,24 @@
 package com.google.spanner.service
 
 import com.google.api.gax.longrunning.OperationFuture
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.spanner.ErrorCode
-import com.google.cloud.spanner.Instance
-import com.google.cloud.spanner.InstanceAdminClient
-import com.google.cloud.spanner.InstanceConfig
-import com.google.cloud.spanner.InstanceConfigId
-import com.google.cloud.spanner.InstanceId
-import com.google.cloud.spanner.InstanceInfo
-import com.google.cloud.spanner.Options
-import com.google.cloud.spanner.Spanner
-import com.google.cloud.spanner.SpannerException
-import com.google.cloud.spanner.SpannerExceptionFactory
-import com.google.cloud.spanner.SpannerOptions
+import com.google.cloud.spanner.*
 import com.google.common.collect.Lists
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata
 import com.google.spanner.exception.ResourceNotFoundException
 import com.google.spanner.util.LoadCredentialsAPI
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import io.grpc.StatusRuntimeException
-
-import java.util.List
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
-
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+
 @Service
 @Slf4j
- class InstanceAdminService {
+class InstanceAdminService {
 
     @Autowired
     LoadCredentialsAPI loadCredentialsAPI
@@ -53,7 +34,7 @@ import org.springframework.web.server.ResponseStatusException
         return spanner?.getInstanceAdminClient()
     }
 
-     InstanceConfig getInstanceConfig(final String url, final String my_config_id) {
+    InstanceConfig getInstanceConfig(final String url, final String my_config_id) {
         InstanceConfig instanceConfig = null
         try {
             if (my_config_id) {
@@ -61,11 +42,11 @@ import org.springframework.web.server.ResponseStatusException
             }
         } catch (SpannerException ex) {
             if (ex.code == ErrorCode.NOT_FOUND.getCode()) {
-                log.error("StatusRunTimeException, instance id :{} not found :{}", my_config_id, ex.getMessage())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance Not Found", ex)
+                log.error('StatusRunTimeException, instance id :{} not found :{}', my_config_id, ex.getMessage())
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, 'Instance Not Found', ex)
             }
         } catch (Exception e) {
-            log.error("Exception {}", e.message)
+            log.error('Exception {}', e.message)
         } finally {
             spanner?.close()
         }
@@ -74,15 +55,15 @@ import org.springframework.web.server.ResponseStatusException
     }
 
     /** List all instance configs. */
-     List<InstanceConfig> listInstanceConfigs(final String url) {
+    List<InstanceConfig> listInstanceConfigs(final String url) {
         def configs = null
         try {
             configs = Lists.newArrayList(
                     getInstanceAdminClientCred(url).listInstanceConfigs(Options.pageSize(1)).iterateAll())
         } catch (SpannerException ex) {
-            log.error("StatusRunTimeException, {}", ex.message)
+            log.error('StatusRunTimeException, {}', ex.message)
         } catch (Exception e) {
-            log.error("Exception {}", e.message)
+            log.error('Exception {}', e.message)
         } finally {
             spanner?.close()
         }
@@ -91,9 +72,9 @@ import org.springframework.web.server.ResponseStatusException
     }
 
     /** Create an instance. */
-     String createInstance(final String url,
-                                 final String instanceId, final String configId, final int node) {
-         final String clientProject = loadCredentialsAPI.getProjectFromCredentials(url)
+    String createInstance(final String url,
+                          final String instanceId, final String configId, final int node) {
+        final String clientProject = loadCredentialsAPI.getProjectFromCredentials(url)
         if (instanceId && configId && clientProject && node) {
             try {
                 OperationFuture<Instance, CreateInstanceMetadata> op =
@@ -105,7 +86,7 @@ import org.springframework.web.server.ResponseStatusException
                                         .build())
 
                 Instance v = op.get(1, TimeUnit.MINUTES)
-                return "Successfully Created Instance Id : " + v.getDisplayName()
+                return 'Successfully Created Instance Id : ' + v.getDisplayName()
             } catch (ExecutionException e) {
                 throw (SpannerException) e.getCause()
             } catch (InterruptedException e) {
@@ -114,12 +95,12 @@ import org.springframework.web.server.ResponseStatusException
                 spanner?.close()
             }
         } else {
-            throw new ResourceNotFoundException("Missing Parameters", HttpStatus.NOT_FOUND.value(), "Important Parameters are missing")
+            throw new ResourceNotFoundException('Missing Parameters', HttpStatus.NOT_FOUND.value(), 'Important Parameters are missing')
         }
     }
 
     /** Get an instance. */
-     Instance getInstance(final String url, final String my_instance_id) {
+    Instance getInstance(final String url, final String my_instance_id) {
         Instance ins = null
         try {
             if (my_instance_id) {
@@ -127,11 +108,11 @@ import org.springframework.web.server.ResponseStatusException
             }
         } catch (SpannerException ex) {
             if (ex.code == ErrorCode.NOT_FOUND.getCode()) {
-                log.error("StatusRunTimeException, instance id :{} not found :{}", my_instance_id, ex.getMessage())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance Not Found", ex)
+                log.error('StatusRunTimeException, instance id :{} not found :{}', my_instance_id, ex.getMessage())
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, 'Instance Not Found', ex)
             }
         } catch (Exception e) {
-            log.error("Exception {}", e.message)
+            log.error('Exception {}', e.message)
         } finally {
             spanner?.close()
         }
@@ -140,12 +121,12 @@ import org.springframework.web.server.ResponseStatusException
     }
 
     /** List All Instances. */
-     List<Instance> listInstances(final String url) {
+    List<Instance> listInstances(final String url) {
         def instances = null
         try {
             instances = Lists.newArrayList(getInstanceAdminClientCred(url).listInstances(Options.pageSize(1)).iterateAll())
         } catch (Exception e) {
-            log.error("Exception : {}", e.message)
+            log.error('Exception : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -155,25 +136,25 @@ import org.springframework.web.server.ResponseStatusException
     }
 
     /** Delete an instance. */
-     String deleteInstance(final String url, final String my_instance_id) {
-         String deleteInstance = null
+    String deleteInstance(final String url, final String my_instance_id) {
+        String deleteInstance = null
         try {
             if (my_instance_id) {
                 getInstanceAdminClientCred(url).deleteInstance(my_instance_id)
-                deleteInstance = "Successfully Deleted"
+                deleteInstance = 'Successfully Deleted'
             }
         } catch (SpannerException ex) {
             if (ex.code == ErrorCode.NOT_FOUND.getCode()) {
-                log.error("StatusRunTimeException, instance id :{} not found :{}", my_instance_id, ex.getMessage())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance Not Found", ex)
+                log.error('StatusRunTimeException, instance id :{} not found :{}', my_instance_id, ex.getMessage())
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, 'Instance Not Found', ex)
             }
         } catch (Exception e) {
-            log.error("Exception {}", e.message)
+            log.error('Exception {}', e.message)
             throw e
         } finally {
             spanner?.close()
         }
-         return deleteInstance
+        return deleteInstance
     }
 
     /** Update an instance. */
@@ -195,12 +176,12 @@ import org.springframework.web.server.ResponseStatusException
             } else if (oldInstance.getNodeCount() != nodeCount) {
                 op = getInstanceAdminClientCred(url).updateInstance(toUpdate, InstanceInfo.InstanceField.NODE_COUNT)
             } else {
-                return "Update Not Required"
+                return 'Update Not Required'
             }
 
             try {
                 Instance v = op.get(1, TimeUnit.MINUTES)
-                finalResult = "Successfully Updated Instance : " + v.getDisplayName()
+                finalResult = 'Successfully Updated Instance : ' + v.getDisplayName()
             } catch (ExecutionException e) {
                 throw (SpannerException) e.getCause()
             } catch (InterruptedException e) {
@@ -209,7 +190,7 @@ import org.springframework.web.server.ResponseStatusException
                 spanner?.close()
             }
         } else {
-            throw new ResourceNotFoundException("Instance Not Found", HttpStatus.NOT_FOUND as int, "Instance Not found for Config id : " + instanceId)
+            throw new ResourceNotFoundException('Instance Not Found', HttpStatus.NOT_FOUND as int, 'Instance Not found for Config id : ' + instanceId)
         }
 
         return finalResult

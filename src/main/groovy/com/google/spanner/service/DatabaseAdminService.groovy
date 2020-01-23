@@ -2,34 +2,21 @@ package com.google.spanner.service
 
 import com.google.api.gax.longrunning.OperationFuture
 import com.google.api.gax.paging.Page
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.spanner.Database
-import com.google.cloud.spanner.DatabaseAdminClient
-import com.google.cloud.spanner.Options
-import com.google.cloud.spanner.Spanner
-import com.google.cloud.spanner.SpannerException
-import com.google.cloud.spanner.SpannerExceptionFactory
-import com.google.cloud.spanner.SpannerOptions
-import com.google.cloud.spanner.TimestampBound
+import com.google.cloud.spanner.*
 import com.google.common.collect.Iterables
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
 import com.google.spanner.util.LoadCredentialsAPI
-
 import groovy.util.logging.Slf4j
-
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.List
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+
 @Service
 @Slf4j
- class DatabaseAdminService {
+class DatabaseAdminService {
 
     @Autowired
     LoadCredentialsAPI loadCredentialsAPI
@@ -46,7 +33,7 @@ import org.springframework.stereotype.Service
     }
 
     /** Example to create database. */
-     Database createDatabase(String url, String instanceId, String databaseId) {
+    Database createDatabase(String url, String instanceId, String databaseId) {
 
         OperationFuture<Database, CreateDatabaseMetadata> op =
                 getDatabaseAdminClient(url).createDatabase(instanceId, databaseId, [])
@@ -66,7 +53,7 @@ import org.springframework.stereotype.Service
 
 
     /** getDatabase. */
-     Database getDatabase(String url, String instanceId, String databaseId) {
+    Database getDatabase(String url, String instanceId, String databaseId) {
         Database db = null
         try {
             db = getDatabaseAdminClient(url).getDatabase(instanceId, databaseId)
@@ -79,8 +66,8 @@ import org.springframework.stereotype.Service
     }
 
     /** Alter the table database DDL. */
-    // Example Value : "ALTER TABLE Albums ADD COLUMN MarkingBudget INT64"
-     String updateTable(String url, String instanceId, String databaseId, String query) {
+    // Example Value : 'ALTER TABLE Albums ADD COLUMN MarkingBudget INT64'
+    String updateTable(String url, String instanceId, String databaseId, String query) {
         String db = null
         try {
             OperationFuture<Void, UpdateDatabaseDdlMetadata> op = getDatabaseAdminClient(url)
@@ -90,15 +77,15 @@ import org.springframework.stereotype.Service
                             Arrays.asList(query),
                             null)
             op.get(1, TimeUnit.MINUTES)
-            db = "Successfully updated"
+            db = 'Successfully updated'
         } catch (ExecutionException e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw (SpannerException) e.getCause()
         } catch (InterruptedException e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw SpannerExceptionFactory.propagateInterrupt(e)
         } catch (Exception e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -107,23 +94,23 @@ import org.springframework.stereotype.Service
     }
 
     /** Drop a Cloud Spanner database. */
-     String dropDatabase(String url, String instanceId, String databaseId) {
-         String dropDatabase = null
+    String dropDatabase(String url, String instanceId, String databaseId) {
+        String dropDatabase = null
         if (instanceId && databaseId) {
             try {
                 getDatabaseAdminClient(url).dropDatabase(instanceId, databaseId)
-                dropDatabase = "Successfully Deleted"
+                dropDatabase = 'Successfully Deleted'
             } catch (Exception e) {
                 throw e
             } finally {
                 spanner?.close()
             }
         }
-         return dropDatabase
+        return dropDatabase
     }
 
     /** Example to get the schema of a Cloud Spanner database. */
-     List<String> getDatabaseDdl(String url, String instanceId, String databaseId) {
+    List<String> getDatabaseDdl(String url, String instanceId, String databaseId) {
         def statementsInDb = null
         try {
             statementsInDb = getDatabaseAdminClient(url).getDatabaseDdl(instanceId, databaseId)
@@ -136,7 +123,7 @@ import org.springframework.stereotype.Service
     }
 
     /**Get the list of Cloud Spanner database in the given instance. */
-     List<Database> listDatabases(String url, String instanceId) {
+    List<Database> listDatabases(String url, String instanceId) {
         def dbs = new ArrayList<Database>()
         try {
             Page<Database> page = getDatabaseAdminClient(url).listDatabases(instanceId, Options.pageSize(1))

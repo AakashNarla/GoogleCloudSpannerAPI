@@ -26,14 +26,14 @@ class TableDataService {
         DatabaseClient dbClient = null
         try {
             String project = loadCredentialsAPI.getProjectFromCredentials(url)
-            log.debug("Project Id : {}", project)
+            log.debug('Project Id : {}', project)
             if (project && instance && database) {
                 spanner = loadCredentialsAPI.getSpanner(url)
                 DatabaseId db = DatabaseId.of(project, instance, database)
                 dbClient = spanner.getDatabaseClient(db)
             }
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Credentials Error", HttpStatus.NOT_FOUND.value(), e?.detailedMessage?.toString() ?: e?.message, new Exception())
+            throw new ResourceNotFoundException('Credentials Error', HttpStatus.NOT_FOUND.value(), e?.detailedMessage?.toString() ?: e?.message, new Exception())
         }
         return dbClient
     }
@@ -46,12 +46,12 @@ class TableDataService {
 
             if (mutations && mutations.size() > 0) {
                 dbClient.write(mutations as Iterable<Mutation>)
-                return "Successfully Inserted data"
+                return 'Successfully Inserted data'
             } else {
-                return "Something went wrong while inserting data"
+                return 'Something went wrong while inserting data'
             }
         } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -65,14 +65,14 @@ class TableDataService {
             dbClient.readWriteTransaction().run(
                     new TransactionCallable<Void>() {
                         @Override
-                         Void run(TransactionContext transaction) throws Exception {
+                        Void run(TransactionContext transaction) throws Exception {
                             rowCount = transaction.executeUpdate(Statement.of(query))
-                            log.info("Record inserted {}", rowCount)
+                            log.info('Record inserted {}', rowCount)
                             return null
                         }
                     })
         } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -88,31 +88,31 @@ class TableDataService {
         DatabaseClient dbClient
         List<Map> finalList = new ArrayList()
         try {
-            def fields = fieldString.tokenize(",")*.trim()
+            def fields = fieldString.tokenize(',')*.trim()
             fields = fields.unique().collect { it.toSet().join() }
 
             dbClient = getDatabaseClient(url, instanceId, databaseId)
 
             Joiner joiner = Joiner.on(',')
-            Statement query = Statement.newBuilder("SELECT ")
+            Statement query = Statement.newBuilder('SELECT ')
                     .append(joiner.join(fields))
-                    .append(" FROM ")
+                    .append(' FROM ')
                     .append(table)
-                    .append(whereCondition ? " where " + whereCondition : "")
+                    .append(whereCondition ? ' where ' + whereCondition : '')
                     .build()
             ResultSet resultSet = dbClient.singleUse(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES)).executeQuery(query)
             while (resultSet.next()) {
                 def outputMap = [:]
                 int count = resultSet.getColumnCount()
                 Struct struct = resultSet.getCurrentRowAsStruct()
-                for (int i = 0 ; i < count; i++) {
+                for (int i = 0; i < count; i++) {
                     String columnName = struct.type.structFields.get(i).name
                     outputMap.put(columnName, getObjectFromQuery(resultSet, i, columnName))
                 }
                 finalList.add(outputMap)
             }
         } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -130,18 +130,18 @@ class TableDataService {
         try {
             dbClient = getDatabaseClient(url, instanceId, databaseId)
 
-            Statement query = Statement.newBuilder("SELECT ")
-                    .append(" COUNT(*) AS rowcount ")
-                    .append(" FROM ")
+            Statement query = Statement.newBuilder('SELECT ')
+                    .append(' COUNT(*) AS rowcount ')
+                    .append(' FROM ')
                     .append(table)
-                    .append(whereCondition ? " where " + whereCondition : "")
+                    .append(whereCondition ? ' where ' + whereCondition : '')
                     .build()
             ResultSet resultSet = dbClient.singleUse(TimestampBound.ofMaxStaleness(1, TimeUnit.MINUTES)).executeQuery(query)
             while (resultSet.next()) {
-                count = resultSet.getLong("rowcount")
+                count = resultSet.getLong('rowcount')
             }
         } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -164,12 +164,12 @@ class TableDataService {
 
                 dbClient.write(mutations as Iterable<Mutation>)
                 isSuccess = true
-                log.info("Records deleted.\n")
+                log.info('Records deleted.\n')
             }
 
         } catch (e) {
             isSuccess = false
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -191,7 +191,7 @@ class TableDataService {
                 def outputMap = [:]
                 int count = resultSet.getColumnCount()
                 Struct struct = resultSet.getCurrentRowAsStruct()
-                for (int i = 0 ; i < count; i++) {
+                for (int i = 0; i < count; i++) {
                     String columnName = struct.type.structFields.get(i).name
                     outputMap.put(columnName, getObjectFromQuery(resultSet, i, columnName))
                 }
@@ -199,7 +199,7 @@ class TableDataService {
 
             }
         } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -208,47 +208,47 @@ class TableDataService {
     }
 
     static Object getObjectFromQuery(ResultSet resultSet, int i, String columnName) {
-        Type type = resultSet.getColumnType(columnName ?: i )
+        Type type = resultSet.getColumnType(columnName ?: i)
         Object returnObject
         switch (type) {
             case Type.TYPE_INT64:
-                returnObject = resultSet.getLong(columnName ?: i )
+                returnObject = resultSet.getLong(columnName ?: i)
                 break
             case Type.TYPE_FLOAT64:
-                returnObject = resultSet.getLong(columnName ?: i )
+                returnObject = resultSet.getLong(columnName ?: i)
                 break
             case Type.TYPE_STRING:
-                returnObject = resultSet.getString(columnName ?: i )
+                returnObject = resultSet.getString(columnName ?: i)
                 break
             case Type.TYPE_TIMESTAMP:
-                returnObject = resultSet.getTimestamp(columnName ?: i )
+                returnObject = resultSet.getTimestamp(columnName ?: i)
                 break
             case Type.TYPE_DATE:
-                returnObject = resultSet.getDate(columnName ?: i )
+                returnObject = resultSet.getDate(columnName ?: i)
                 break
             case Type.TYPE_BYTES:
-                returnObject = resultSet.getBytes(columnName ?: i )
+                returnObject = resultSet.getBytes(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_BOOL:
-                returnObject = resultSet.getBooleanArray(columnName ?: i )
+                returnObject = resultSet.getBooleanArray(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_BYTES:
-                returnObject = resultSet.getBytesList(columnName ?: i )
+                returnObject = resultSet.getBytesList(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_DATE:
-                returnObject = resultSet.getDateList(columnName ?: i )
+                returnObject = resultSet.getDateList(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_TIMESTAMP:
-                returnObject = resultSet.getTimestampList(columnName ?: i )
+                returnObject = resultSet.getTimestampList(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_FLOAT64:
-                returnObject = resultSet.getLongArray(columnName ?: i )
+                returnObject = resultSet.getLongArray(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_INT64:
-                returnObject = resultSet.getDoubleList(columnName ?: i )
+                returnObject = resultSet.getDoubleList(columnName ?: i)
                 break
             case Type.TYPE_ARRAY_STRING:
-                returnObject = resultSet.getStringList(columnName ?: i )
+                returnObject = resultSet.getStringList(columnName ?: i)
                 break
 
             default:
@@ -273,11 +273,11 @@ class TableDataService {
                 mutations.add(Mutation.delete(tableName, KeySet.all()))
                 dbClient.write(mutations as Iterable<Mutation>)
                 isSuccess = true
-                log.info("Records deleted.\n")
+                log.info('Records deleted.\n')
             }
         } catch (e) {
             isSuccess = false
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()
@@ -293,15 +293,15 @@ class TableDataService {
             dbClient.readWriteTransaction().run(
                     new TransactionCallable<Void>() {
                         @Override
-                         Void run(TransactionContext transaction) throws Exception {
-                            //String sql = "DELETE FROM Singers WHERE FirstName = 'Alice'"
+                        Void run(TransactionContext transaction) throws Exception {
+                            //String sql = 'DELETE FROM Singers WHERE FirstName = 'Alice''
                             rowCount = transaction.executeUpdate(Statement.of(query))
-                            log.info("Record deleted : {}", rowCount)
+                            log.info('Record deleted : {}', rowCount)
                             return null
                         }
                     })
         } catch (e) {
-            log.error("Unexpected Error : {}", e.message)
+            log.error('Unexpected Error : {}', e.message)
             throw e
         } finally {
             spanner?.close()

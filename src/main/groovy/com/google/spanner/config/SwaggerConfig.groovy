@@ -1,7 +1,5 @@
 package com.google.spanner.config
 
-
-
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.ResponseEntity
@@ -20,10 +18,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 class SwaggerConfig {
 
     @Bean
-     Docket productApi() {
-        return new Docket(DocumentationType.SWAGGER_2).select()
+    Docket productApi() {
+        new Docket(DocumentationType.SWAGGER_2).select()
                 .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.regex("/v1/.*"))
+                .paths(PathSelectors.regex('/v1/.*'))
                 .build()
                 .directModelSubstitute(RedirectView, Void)
                 .directModelSubstitute(ResponseEntity, Void)
@@ -31,13 +29,14 @@ class SwaggerConfig {
     }
 
     private static ApiInfo metaData() {
-        return new ApiInfoBuilder()
-                .title("Google Spanner REST API")
-                .description("\"Spanner REST API for Big Id\"")
-                .version("1.0.0")
-                .license("Apache License Version 2.0")
-                .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0\"")
-                .contact(new Contact("Aakash Narla", "", "aakash.narla.rao@gmail.com"))
+        new ApiInfoBuilder()
+                .title('Google Spanner REST API')
+                .description('Spanner REST API for Big Id')
+                .version('1.0.0')
+                .license('Apache License Version 2.0')
+                .licenseUrl('https://www.apache.org/licenses/LICENSE-2.0\'')
+                .contact(new Contact('Aakash Narla', '', 'aakash.narla.rao@gmail.com'))
                 .build()
     }
+
 }

@@ -1,5 +1,11 @@
 spring:
+  application:
+    name: Google Spanner API
   main:
     banner-mode: off
+
+info:
+  name: Google Spanner API
+
 server:
   port: 8080

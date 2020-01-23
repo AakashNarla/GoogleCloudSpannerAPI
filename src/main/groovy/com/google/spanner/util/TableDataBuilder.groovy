@@ -1,13 +1,10 @@
 package com.google.spanner.util
 
 import com.google.cloud.spanner.Mutation
-import com.google.cloud.spanner.Value
-import com.google.cloud.spanner.ValueBinder
-import com.google.cloud.spanner.Mutation.WriteBuilder
 
 class TableDataBuilder {
 
-     static List<Mutation> createMutationList(String tableName, List<Map> insertDataList) {
+    static List<Mutation> createMutationList(String tableName, List<Map> insertDataList) {
         def mutations = new ArrayList<Mutation>()
         for (Map insertData : insertDataList) {
             int size = insertData.size()
@@ -64,122 +61,122 @@ class TableDataBuilder {
     static Mutation create1Mutation(String tableName, Map insertData, String... keys) {
 
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
                 .build()
     }
 
     static Mutation create2Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
                 .build()
     }
 
     static Mutation create3Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
                 .build()
     }
 
     static Mutation create4Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
                 .build()
     }
 
     static Mutation create5Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
                 .build()
     }
 
     static Mutation create6Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
-                .set(keys[5]).to(insertData?.get(keys[5]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
+                .set(keys[5]).to(insertData?.get(keys[5]))
                 .build()
     }
 
     static Mutation create7Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
-                .set(keys[5]).to(insertData?.get(keys[5]) )
-                .set(keys[6]).to(insertData?.get(keys[6]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
+                .set(keys[5]).to(insertData?.get(keys[5]))
+                .set(keys[6]).to(insertData?.get(keys[6]))
                 .build()
     }
 
     static Mutation create8Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
-                .set(keys[5]).to(insertData?.get(keys[5]) )
-                .set(keys[6]).to(insertData?.get(keys[6]) )
-                .set(keys[7]).to(insertData?.get(keys[7]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
+                .set(keys[5]).to(insertData?.get(keys[5]))
+                .set(keys[6]).to(insertData?.get(keys[6]))
+                .set(keys[7]).to(insertData?.get(keys[7]))
                 .build()
     }
 
     static Mutation create9Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
-                .set(keys[5]).to(insertData?.get(keys[5]) )
-                .set(keys[6]).to(insertData?.get(keys[6]) )
-                .set(keys[7]).to(insertData?.get(keys[7]) )
-                .set(keys[8]).to(insertData?.get(keys[8]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
+                .set(keys[5]).to(insertData?.get(keys[5]))
+                .set(keys[6]).to(insertData?.get(keys[6]))
+                .set(keys[7]).to(insertData?.get(keys[7]))
+                .set(keys[8]).to(insertData?.get(keys[8]))
                 .build()
     }
 
     static Mutation create10Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
-                .set(keys[5]).to(insertData?.get(keys[5]) )
-                .set(keys[6]).to(insertData?.get(keys[6]) )
-                .set(keys[7]).to(insertData?.get(keys[7]) )
-                .set(keys[8]).to(insertData?.get(keys[8]) )
-                .set(keys[9]).to(insertData?.get(keys[9]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
+                .set(keys[5]).to(insertData?.get(keys[5]))
+                .set(keys[6]).to(insertData?.get(keys[6]))
+                .set(keys[7]).to(insertData?.get(keys[7]))
+                .set(keys[8]).to(insertData?.get(keys[8]))
+                .set(keys[9]).to(insertData?.get(keys[9]))
                 .build()
     }
 
     static Mutation create11Mutation(String tableName, Map insertData, String... keys) {
         return Mutation.newInsertOrUpdateBuilder(tableName)
-                .set(keys[0]).to(insertData?.get(keys[0]) )
-                .set(keys[1]).to(insertData?.get(keys[1]) )
-                .set(keys[2]).to(insertData?.get(keys[2]) )
-                .set(keys[3]).to(insertData?.get(keys[3]) )
-                .set(keys[4]).to(insertData?.get(keys[4]) )
-                .set(keys[5]).to(insertData?.get(keys[5]) )
-                .set(keys[6]).to(insertData?.get(keys[6]) )
-                .set(keys[7]).to(insertData?.get(keys[7]) )
-                .set(keys[8]).to(insertData?.get(keys[8]) )
-                .set(keys[9]).to(insertData?.get(keys[9]) )
-                .set(keys[10]).to(insertData?.get(keys[10]) )
+                .set(keys[0]).to(insertData?.get(keys[0]))
+                .set(keys[1]).to(insertData?.get(keys[1]))
+                .set(keys[2]).to(insertData?.get(keys[2]))
+                .set(keys[3]).to(insertData?.get(keys[3]))
+                .set(keys[4]).to(insertData?.get(keys[4]))
+                .set(keys[5]).to(insertData?.get(keys[5]))
+                .set(keys[6]).to(insertData?.get(keys[6]))
+                .set(keys[7]).to(insertData?.get(keys[7]))
+                .set(keys[8]).to(insertData?.get(keys[8]))
+                .set(keys[9]).to(insertData?.get(keys[9]))
+                .set(keys[10]).to(insertData?.get(keys[10]))
                 .build()
     }
 }
