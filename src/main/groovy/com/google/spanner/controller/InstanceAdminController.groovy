@@ -78,10 +78,10 @@ class InstanceAdminController {
             @ApiResponse(code = 404, message = 'The resource you were trying to reach is not found')
     ]
     )
-    @PostMapping('/update')
+    @PostMapping('/{instance-id}/update')
     ResponseEntity<ResponseWrapper> updateInstance(
             @RequestParam(name = 'url', required = true) String url,
-            @RequestParam(name = 'instance-id', required = true) String instanceId,
+            @PathVariable(name = 'instance-id', required = true) String instanceId,
             @RequestParam(name = 'display-name', required = true) String newDisplayName,
             @RequestParam(name = 'node-count', required = true) int nodeCount) {
         String result = spannerService.updateInstance(url, instanceId, newDisplayName, nodeCount)
