@@ -1,13 +1,13 @@
 openapi: 3.0.1
 info:
   title: Google Spanner REST API
-  description: '"Spanner REST API for Big Id"'
+  description: Spanner REST API for Big Id
   contact:
     name: Aakash Narla
     email: aakash.narla.rao@gmail.com
   license:
     name: Apache License Version 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0"
+    url: https://www.apache.org/licenses/LICENSE-2.0'
   version: 1.0.0
 servers:
   - url: //localhost:8080/
@@ -141,58 +141,6 @@ paths:
           description: The resource you were trying to reach is not found
           content: {}
       deprecated: false
-  /v1/spanner/instance/update:
-    post:
-      tags:
-        - Instance
-      summary: Update an existing Spanner instance display name and node count
-      operationId: updateInstanceUsingPOST
-      parameters:
-        - name: display-name
-          in: query
-          description: display-name
-          required: true
-          schema:
-            type: string
-        - name: instance-id
-          in: query
-          description: instance-id
-          required: true
-          schema:
-            type: string
-        - name: node-count
-          in: query
-          description: node-count
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: url
-          in: query
-          description: url
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Successfully updated instance
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ResponseWrapper'
-        201:
-          description: Created
-          content: {}
-        401:
-          description: You are not authorized to view the resource
-          content: {}
-        403:
-          description: Accessing the resource you were trying to reach is forbidden
-          content: {}
-        404:
-          description: The resource you were trying to reach is not found
-          content: {}
-      deprecated: false
   /v1/spanner/instance/{instance-config}/config:
     post:
       tags:
@@ -299,6 +247,58 @@ paths:
                 $ref: '#/components/schemas/ResponseWrapper'
         204:
           description: No Content
+          content: {}
+        401:
+          description: You are not authorized to view the resource
+          content: {}
+        403:
+          description: Accessing the resource you were trying to reach is forbidden
+          content: {}
+        404:
+          description: The resource you were trying to reach is not found
+          content: {}
+      deprecated: false
+  /v1/spanner/instance/{instance-id}/update:
+    post:
+      tags:
+        - Instance
+      summary: Update an existing Spanner instance display name and node count
+      operationId: updateInstanceUsingPOST
+      parameters:
+        - name: display-name
+          in: query
+          description: display-name
+          required: true
+          schema:
+            type: string
+        - name: instance-id
+          in: path
+          description: instance-id
+          required: true
+          schema:
+            type: string
+        - name: node-count
+          in: query
+          description: node-count
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: url
+          in: query
+          description: url
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully updated instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        201:
+          description: Created
           content: {}
         401:
           description: You are not authorized to view the resource
@@ -658,9 +658,9 @@ paths:
             type: string
         - name: query
           in: query
-          description: '''CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo
-          BYTES(MAX)) PRIMARY KEY (SingerId)'' OR ''ALTER TABLE Albums ADD COLUMN
-          XXX INT64'''
+          description: CREATE TABLE Singers (SingerId   INT64 NOT NULL,  FirstName  STRING(1024),  LastName   STRING(1024),  SingerInfo
+            BYTES(MAX)) PRIMARY KEY (SingerId)' OR 'ALTER TABLE Albums ADD COLUMN XXX
+            INT64'
           allowEmptyValue: false
           schema:
             type: string
@@ -949,7 +949,7 @@ paths:
             type: string
         - name: where-condition
           in: query
-          description: '''id > 1'' or ''LIMIT 100'''
+          description: id > 1' or 'LIMIT 100'
           allowEmptyValue: false
           schema:
             type: string
