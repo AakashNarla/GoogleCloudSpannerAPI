@@ -1,15 +1,16 @@
 package intg;
 
+import com.google.spanner.util.MessageMatcher;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
+import org.junit.Assert;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
 
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 public class StepDefsIntegrationTest extends SpringIntegrationTest {
@@ -33,8 +34,8 @@ public class StepDefsIntegrationTest extends SpringIntegrationTest {
 
     @And("^the client receives server version (.+)$")
     public void the_client_receives_server_version_body(String version) throws Throwable {
-        assertThat(responseString, containsString(version));
-        //assertThat(latestResponse.getBody(), is(version));
+        Assert.assertTrue(new MessageMatcher().matchJsonString(responseString, version));
+        //assertThat(responseString, containsString(version));
     }
 
     @Given("^the client calls /configs:$")
@@ -78,6 +79,29 @@ public class StepDefsIntegrationTest extends SpringIntegrationTest {
     public void deleteSpannerInstance() throws Throwable {
         String url = GlobalConfig.baseInstanceUrl.concat("/{instance-id}/delete");
         Map params = createURLParams("spanner-demo",null,null);
+        executeDelete(url, params);
+    }
+
+    //Database API Steps
+
+    @Given("^create new database:$")
+    public void createNewDatabase() throws Throwable {
+        String url = GlobalConfig.baseDatabaseUrl.concat("/create/{database-name}");
+        Map params = createURLParams("spanner-demo","spanner",null);
+         executePost(url, null, params);
+    }
+
+    @Given("^get current database status:$")
+    public void getCurrDatabaseState() throws Throwable {
+        String url = GlobalConfig.baseDatabaseUrl.concat("/{database-name}/status");
+        Map params = createURLParams("spanner-demo","spanner",null);
+        executePost(url,null, params);
+    }
+
+    @Given("^delete database:$")
+    public void deleteDatabase() throws Throwable {
+        String url = GlobalConfig.baseDatabaseUrl.concat("/drop/{database-name}");
+        Map params = createURLParams("spanner-demo","spanner",null);
         executeDelete(url, params);
     }
 }
